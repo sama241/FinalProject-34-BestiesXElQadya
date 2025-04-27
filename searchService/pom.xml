@@ -9,11 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>searchService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>demo</name>
-	<description>Final Project</description>
+	<name>searchService</name>
+	<description>searchService</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -21,10 +20,7 @@
 	<developers>
 		<developer/>
 	</developers>
-    <modules>
-        <module>workerService</module>
-    </modules>
-    <scm>
+	<scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
