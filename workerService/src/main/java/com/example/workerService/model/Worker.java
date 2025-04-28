@@ -15,7 +15,7 @@ public class Worker {
     private String email;
     private String password;
     private String profession;
-
+    private boolean isAvailable;
     private List<String> skills;           // Dynamic list of skills
     private List<Integer> availableHours;  // Available working hours (e.g., [9, 10, 11, 14])
 
@@ -26,6 +26,8 @@ public class Worker {
         this.skills = new ArrayList<>();
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
+        this.isAvailable = false;  // ➔ Default to false when empty
+
     }
 
     public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours) {
@@ -36,6 +38,7 @@ public class Worker {
         this.skills = skills;
         this.availableHours = availableHours;
         this.badges = new ArrayList<>();
+        this.isAvailable = (availableHours != null && !availableHours.isEmpty()); // ➔ if availableHours not empty, available!
     }
 
     // Getters and Setters
@@ -94,6 +97,7 @@ public class Worker {
 
     public void setAvailableHours(List<Integer> availableHours) {
         this.availableHours = availableHours;
+        this.isAvailable = (availableHours != null && !availableHours.isEmpty());
     }
 
     public List<String> getBadges() {
@@ -104,22 +108,24 @@ public class Worker {
         this.badges = badges;
     }
 
-
-
     // 🔥 Helper Methods
 
     // Method to book an available hour
     public boolean bookHour(int hour) {
         if (availableHours.contains(hour)) {
-            availableHours.remove(Integer.valueOf(hour)); // Remove the booked hour
-            return true; // Successful booking
+            availableHours.remove(Integer.valueOf(hour));
+            this.isAvailable = !availableHours.isEmpty(); // update availability
+            return true;
         }
-        return false; // Hour not available
+        return false;
     }
 
-    // Method to check availability
     public boolean isAvailable() {
-        return !availableHours.isEmpty();
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
     }
 
     // Method to add a badge

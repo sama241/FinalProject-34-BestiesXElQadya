@@ -32,6 +32,9 @@ public class WorkerService {
         return workerRepository.save(worker);
     }
 
+    public void deleteAllWorkers() {
+        workerRepository.deleteAll();
+    }
 
 }
 

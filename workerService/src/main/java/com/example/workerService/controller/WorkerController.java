@@ -18,11 +18,11 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
-    // ✅ Create new Worker
-//    @PostMapping("/create")
-//    public Worker createWorker22(@RequestBody Worker worker) {
-//        return workerRepository.save(worker);
-//    }
+    @DeleteMapping("/delete")
+    public String deleteAllWorkers() {
+        workerService.deleteAllWorkers();
+        return "All workers have been deleted successfully.";
+    }
 
     @PostMapping("/create")
     public Worker createWorker(@RequestBody Worker workerRequest) {
