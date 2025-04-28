@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/search")
@@ -19,7 +20,7 @@ public class SearchController {
     }
 
     @PostMapping
-    public List<String> searchWorkers(@RequestBody SearchRequest request) {
+    public List<Map<String, Object>> searchWorkers(@RequestBody SearchRequest request) {
         return searchService.searchWorkers(request);
     }
 }

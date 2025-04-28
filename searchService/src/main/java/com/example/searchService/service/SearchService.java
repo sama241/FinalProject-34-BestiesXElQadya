@@ -5,7 +5,9 @@ import com.example.searchService.strategy.SearchStrategy;
 import com.example.searchService.strategy.SearchStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SearchService {
@@ -17,7 +19,7 @@ public class SearchService {
         this.searchStrategyFactory = searchStrategyFactory;
     }
 
-    public List<String> searchWorkers(SearchRequest request) {
+    public List<Map<String, Object>> searchWorkers(SearchRequest request) {
         SearchStrategy strategy = searchStrategyFactory.getStrategy(request);
         return strategy.search(request);
     }
