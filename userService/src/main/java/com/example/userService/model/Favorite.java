@@ -1,4 +1,4 @@
-package model;
+package com.example.userService.model;
 
 import jakarta.persistence.*;
 
@@ -13,7 +13,10 @@ public class Favorite {
     private UUID userId;
     private UUID workerId;
     // Constructor
+
+    // tab w id el record?
     public Favorite(UUID userId, UUID workerId) {
+        this.id = UUID.randomUUID();
         this.userId = userId;
         this.workerId = workerId;
     }

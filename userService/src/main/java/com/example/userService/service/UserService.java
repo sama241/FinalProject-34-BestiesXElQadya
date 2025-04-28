@@ -1,14 +1,15 @@
-package service;
+package com.example.userService.service;
 
 
-import model.Favorite;
-import model.User;
-import repository.UserRepository;
+import com.example.userService.model.Favorite;
+import com.example.userService.model.User;
+import com.example.userService.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import repository.FavoriteRepository;
+import com.example.userService.repository.FavoriteRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,7 +21,23 @@ public class UserService {
     @Autowired
     private FavoriteRepository favoriteRepository;
 
+
+
     // CRUD Operations for User
+
+    //get all
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    // get by username
+    public Optional<User> findByUsername(String username) {
+            return userRepository.findByUsername(username);
+    }
+
+    // get by email
+
+
     // Create a new User
     public User createUser(User user) {
         return userRepository.save(user);
@@ -31,13 +48,14 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+
     // Update User details
-    // Update User details
+    // say if we update haga haga mesh kolo?
     public User updateUser(UUID userId, User userDetails) {
         User user = getUserById(userId);
         user.setUsername(userDetails.getUsername());
         user.setName(userDetails.getName());
-        user.setPassword(userDetails.getPassword());  // Ensure password is hashed
+        user.setPassword(userDetails.getPassword());
         user.setEmail(userDetails.getEmail());
         user.setPhone(userDetails.getPhone());
         user.setAddress(userDetails.getAddress());

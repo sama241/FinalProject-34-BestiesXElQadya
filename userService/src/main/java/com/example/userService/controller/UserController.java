@@ -1,11 +1,11 @@
-package controller;
+package com.example.userService.controller;
 
-import model.Favorite;
-import model.User;
+import com.example.userService.model.Favorite;
+import com.example.userService.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import service.UserService;
+import com.example.userService.service.UserService;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +17,13 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+
+    // get all
+    @GetMapping
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
 
     // Create a new User
     @PostMapping
@@ -46,7 +53,6 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    // favorites functions
 
     // Favorite Worker Functions
 

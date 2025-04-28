@@ -1,4 +1,4 @@
-package model;
+package com.example.userService.model;
 
 
 import jakarta.persistence.*;
@@ -28,6 +28,29 @@ public class User {
         this.phone = phone;
         this.address = address;
     }
+
+
+    // tab wel id?
+
+    public User(String username, String name, String password, String email, String phone, String address) {
+        this.id = UUID.randomUUID();
+        this.username = username;
+        this.name = name;
+        this.password = password;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+    }
+
+    // tab wel id?
+
+    public User(String username, String password) {
+        this.id = UUID.randomUUID();
+        this.username = username;
+        this.password = password;
+    }
+
+
 
     public User() {
     }

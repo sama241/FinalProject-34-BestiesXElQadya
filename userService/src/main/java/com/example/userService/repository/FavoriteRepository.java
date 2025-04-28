@@ -1,6 +1,6 @@
-package repository;
+package com.example.userService.repository;
 
-import model.Favorite;
+import com.example.userService.model.Favorite;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +13,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
     List<Favorite> findByUserId(UUID userId);
 
     void deleteByUserIdAndWorkerId(UUID userId, UUID workerId);
+
+    // delete all favorite records bta3et user mo3ayan
 }
