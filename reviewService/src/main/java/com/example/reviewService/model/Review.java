@@ -28,11 +28,12 @@ public class Review {
     private String comment;
     private boolean isAnonymous;
 
-    private int helpfulVotes = 0;
-    private List<String> voterIds = new ArrayList<>();
+    private int helpfulVotes;
+    private List<String> voterIds;
 
 
-    public Review() {} // Required for Spring Data
+    public Review() {}
+
     public Review(String workerId, String userId, int rating) {
         this.workerId = Objects.requireNonNull(workerId);
         this.userId = Objects.requireNonNull(userId);
