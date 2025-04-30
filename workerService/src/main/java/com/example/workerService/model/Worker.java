@@ -15,9 +15,12 @@ public class Worker {
     private String email;
     private String password;
     private String profession;
+
     private List<String> skills;
     private List<Integer> availableHours;
     private List<String> badges;
+
+
 
     // Constructors
     public Worker() {

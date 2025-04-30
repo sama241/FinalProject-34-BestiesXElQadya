@@ -82,6 +82,13 @@ public class WorkerController {
             return "Worker not found.";
         }
     }
+<<<<<<< HEAD
+=======
+    @PutMapping("/{id}/addBadge")
+    public String addBadge(@PathVariable String id, @RequestParam String badgeType) {
+        return workerService.addBadgeToWorker(id, badgeType);
+    }
+>>>>>>> origin/rotana
 
     // View Booking Orders
 
