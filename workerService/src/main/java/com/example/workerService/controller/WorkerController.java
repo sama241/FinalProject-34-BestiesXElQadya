@@ -18,25 +18,38 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
+    // ✅ Create new Worker
+//    @PostMapping("/create")
+//    public Worker createWorker22(@RequestBody Worker worker) {
+//        return workerRepository.save(worker);
+//    }
 
-    @PostMapping
-    public Worker createWorker(@RequestBody Worker worker) {
-        return workerRepository.save(worker);
+    @PostMapping("/create")
+    public Worker createWorker(@RequestBody Worker workerRequest) {
+        Worker worker = WorkerFactory.createWorker(
+                workerRequest.getName(),
+                workerRequest.getEmail(),
+                workerRequest.getPassword(),
+                workerRequest.getProfession(),
+                workerRequest.getSkills(),
+                workerRequest.getAvailableHours()
+        );
+        return workerService.saveWorker(worker);
     }
 
-    // 🔹 READ ALL
+    // ✅ Get all Workers
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    // 🔹 READ ONE
+    // ✅ Get Worker by ID
     @GetMapping("/{id}")
     public Worker getWorkerById(@PathVariable String id) {
         return workerRepository.findById(id).orElse(null);
     }
 
-    // 🔹 UPDATE
+    // ✅ Update Worker
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
         Optional<Worker> optional = workerRepository.findById(id);
@@ -54,7 +67,7 @@ public class WorkerController {
         return null;
     }
 
-    // 🔹 DELETE
+    // ✅ Delete Worker
     @DeleteMapping("/{id}")
     public String deleteWorker(@PathVariable String id) {
         if (workerRepository.existsById(id)) {
