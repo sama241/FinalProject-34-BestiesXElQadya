@@ -18,60 +18,52 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
-    // ✅ Create new Worker
-//    @PostMapping("/create")
-//    public Worker createWorker22(@RequestBody Worker worker) {
-//        return workerRepository.save(worker);
-//    }
 
-    @PostMapping("/create")
-    public Worker createWorker(@RequestBody Worker workerRequest) {
-        Worker worker = WorkerFactory.createWorker(
-                workerRequest.getName(),
-                workerRequest.getEmail(),
-                workerRequest.getPassword(),
-                workerRequest.getProfession(),
-                workerRequest.getSkills(),
-                workerRequest.getAvailableHours()
-        );
-        return workerService.saveWorker(worker);
+    @PostMapping
+    public Worker createWorker(@RequestBody Worker worker) {
+        return workerRepository.save(worker);
     }
 
-    // ✅ Get all Workers
+    // 🔹 READ ALL
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    // ✅ Get Worker by ID
+    // 🔹 READ ONE
     @GetMapping("/{id}")
-    public Optional<Worker> getWorkerById(@PathVariable String id) {
-        return workerRepository.findById(id);
+    public Worker getWorkerById(@PathVariable String id) {
+        return workerRepository.findById(id).orElse(null);
     }
 
-    // ✅ Update Worker
+    // 🔹 UPDATE
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker workerDetails) {
-        Worker worker = workerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Worker not found with id " + id));
-
-        worker.setName(workerDetails.getName());
-        worker.setEmail(workerDetails.getEmail());
-        worker.setPassword(workerDetails.getPassword());
-        worker.setProfession(workerDetails.getProfession());
-        worker.setSkills(workerDetails.getSkills());
-        worker.setAvailableHours(workerDetails.getAvailableHours());
-        worker.setBadges(workerDetails.getBadges());
-
-        return workerRepository.save(worker);
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+        Optional<Worker> optional = workerRepository.findById(id);
+        if (optional.isPresent()) {
+            Worker existing = optional.get();
+            existing.setName(updatedWorker.getName());
+            existing.setEmail(updatedWorker.getEmail());
+            existing.setPassword(updatedWorker.getPassword());
+            existing.setProfession(updatedWorker.getProfession());
+            existing.setSkills(updatedWorker.getSkills());
+            existing.setAvailableHours(updatedWorker.getAvailableHours());
+            existing.setBadges(updatedWorker.getBadges());
+            return workerRepository.save(existing);
+        }
+        return null;
     }
 
-    // ✅ Delete Worker
+    // 🔹 DELETE
     @DeleteMapping("/{id}")
     public String deleteWorker(@PathVariable String id) {
-        workerRepository.deleteById(id);
-        return "Worker deleted successfully!";
+        if (workerRepository.existsById(id)) {
+            workerRepository.deleteById(id);
+            return "Worker deleted";
+        }
+        return "Worker not found";
     }
+
 
     @PutMapping("/workinghours/{id}")
     public String setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours) {
