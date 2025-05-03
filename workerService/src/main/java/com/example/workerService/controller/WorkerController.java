@@ -1,5 +1,6 @@
 package com.example.workerService.controller;
-import com.example.workerService.factory.WorkerFactory;
+import com.example.workerService.factory.WorkerFactoryDispatcher;
+import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 
@@ -26,7 +27,12 @@ public class WorkerController {
 
     @PostMapping("/create")
     public Worker createWorker(@RequestBody Worker workerRequest) {
-        Worker worker = WorkerFactory.createWorker(
+
+        WorkerProfileType profile = WorkerFactoryDispatcher.getWorkerProfile(workerRequest.getProfession());
+        System.out.println("Hiring: " + profile.getWorkerRole()); // Optional log
+
+        // Manually create the worker using the info and factory output
+        Worker worker = new Worker(
                 workerRequest.getName(),
                 workerRequest.getEmail(),
                 workerRequest.getPassword(),
@@ -34,6 +40,7 @@ public class WorkerController {
                 workerRequest.getSkills(),
                 workerRequest.getAvailableHours()
         );
+
         return workerService.saveWorker(worker);
     }
 
