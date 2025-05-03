@@ -18,23 +18,10 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
-    // ✅ Create new Worker
-//    @PostMapping("/create")
-//    public Worker createWorker22(@RequestBody Worker worker) {
-//        return workerRepository.save(worker);
-//    }
 
-    @PostMapping("/create")
-    public Worker createWorker(@RequestBody Worker workerRequest) {
-        Worker worker = WorkerFactory.createWorker(
-                workerRequest.getName(),
-                workerRequest.getEmail(),
-                workerRequest.getPassword(),
-                workerRequest.getProfession(),
-                workerRequest.getSkills(),
-                workerRequest.getAvailableHours()
-        );
-        return workerService.saveWorker(worker);
+    @PostMapping
+    public Worker createWorker(@RequestBody Worker worker) {
+        return workerRepository.save(worker);
     }
 
     // ✅ Get all Workers
@@ -55,17 +42,40 @@ public class WorkerController {
         Optional<Worker> optional = workerRepository.findById(id);
         if (optional.isPresent()) {
             Worker existing = optional.get();
-            existing.setName(updatedWorker.getName());
-            existing.setEmail(updatedWorker.getEmail());
-            existing.setPassword(updatedWorker.getPassword());
-            existing.setProfession(updatedWorker.getProfession());
-            existing.setSkills(updatedWorker.getSkills());
-            existing.setAvailableHours(updatedWorker.getAvailableHours());
-            existing.setBadges(updatedWorker.getBadges());
+
+            if (updatedWorker.getName() != null) {
+                existing.setName(updatedWorker.getName());
+            }
+
+            if (updatedWorker.getEmail() != null) {
+                existing.setEmail(updatedWorker.getEmail());
+            }
+
+            if (updatedWorker.getPassword() != null) {
+                existing.setPassword(updatedWorker.getPassword());
+            }
+
+            if (updatedWorker.getProfession() != null) {
+                existing.setProfession(updatedWorker.getProfession());
+            }
+
+            if (updatedWorker.getSkills() != null) {
+                existing.setSkills(updatedWorker.getSkills());
+            }
+
+            if (updatedWorker.getAvailableHours() != null) {
+                existing.setAvailableHours(updatedWorker.getAvailableHours());
+            }
+
+            if (updatedWorker.getBadges() != null) {
+                existing.setBadges(updatedWorker.getBadges());
+            }
+
             return workerRepository.save(existing);
         }
         return null;
     }
+
 
     // ✅ Delete Worker
     @DeleteMapping("/{id}")
