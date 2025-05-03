@@ -1,21 +1,19 @@
 package com.example.reviewService.model;
 
-import com.example.reviewService.ReviewServiceApplication;
-import org.springframework.boot.SpringApplication;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Document(collection = "reviews")
 public class Review {
 
-    //attributes
-
     @Id
-    private String id;
+    private String id;  // Let MongoDB generate the ID automatically
 
     @Indexed
     private String workerId;
@@ -24,28 +22,85 @@ public class Review {
     private String userId;
 
     private int rating;
-
     private String comment;
     private boolean isAnonymous;
-
-    private int helpfulVotes;
-    private List<String> voterIds;
+    private int helpfulVotes = 0;
 
 
-    public Review() {}
-
-    private Review (Builder builder) {
-        this.id = builder.id;
-        this.workerId = builder.workerId;
-        this.userId =  builder.userId;
-        this.rating= builder.rating;
-        this.comment=builder.comment;
-        this.isAnonymous= builder.isAnonymous;
-        this.helpfulVotes=builder.helpfulVotes;
-        this.voterIds=builder.voterIds;
+    public int getHelpfulVotes() {
+        return helpfulVotes;
     }
 
-    // equals(), hashCode(), toString()
+    public void setHelpfulVotes(int helpfulVotes) {
+        this.helpfulVotes = helpfulVotes;
+    }
+
+    public void incrementHelpfulVotes() {
+        this.helpfulVotes++;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void setIsAnonymous(boolean anonymous) {
+        isAnonymous = anonymous;
+    }
+
+    // Default constructor
+    public Review() {}
+
+    // Private constructor for the Builder pattern
+    private Review(Builder builder) {
+        this.id = builder.id != null ? builder.id : null;  // Leave id null for MongoDB to generate it
+        this.workerId = builder.workerId;
+        this.userId = builder.userId;
+        this.rating = builder.rating;
+        this.comment = builder.comment;
+        this.isAnonymous = builder.isAnonymous;
+    }
+
+    // Getters for the fields
+    public String getId() {
+        return id;  // MongoDB should populate this
+    }
+
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public boolean getIsAnonymous() {
+        return isAnonymous;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,20 +124,14 @@ public class Review {
                 '}';
     }
 
+    // The Builder class
     public static class Builder {
-        private String id;
+        private String id;  // Do not set id here, leave it null for MongoDB
         private String workerId;
         private String userId;
         private int rating;
         private String comment = "";
         private boolean isAnonymous = false;
-        private int helpfulVotes = 0;
-        private List<String> voterIds = new ArrayList<>();
-
-        public Builder id(String id) {
-            this.id = id;
-            return this;
-        }
 
         public Builder workerId(String workerId) {
             this.workerId = workerId;
@@ -109,38 +158,8 @@ public class Review {
             return this;
         }
 
-        public Builder helpfulVotes(int helpfulVotes) {
-            this.helpfulVotes = helpfulVotes;
-            return this;
-        }
-
-        public Builder voterIds(List<String> voterIds) {
-            this.voterIds = voterIds;
-            return this;
-
-        }
         public Review build() {
             return new Review(this);
         }
-
-
     }
-    public static class demo {
-        public static void main(String[] args) {
-            Review review = new Review.Builder()
-                    .id("hdbf")
-                    .workerId("64654")
-                    .userId("34")
-                    .isAnonymous(true)
-                    .helpfulVotes(4)
-                    .build();
-            System.out.println(review);
-
-        }
-    }
-
 }
-
-
-
-

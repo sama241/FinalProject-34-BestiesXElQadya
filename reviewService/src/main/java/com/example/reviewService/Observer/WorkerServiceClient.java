@@ -17,7 +17,10 @@ public class WorkerServiceClient implements ReviewObserver {
 
     @Override
     public void update(ReviewEvent event) {
-        // Implementation for notifying WorkerService
+        // Log the event data (Optional)
+        System.out.println("Received review event: " + event);
+
+        // Send the event data to the worker service
         restTemplate.postForObject(
                 "http://worker-service/api/ratings",
                 event,

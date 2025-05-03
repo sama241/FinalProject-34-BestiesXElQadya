@@ -16,4 +16,14 @@ public class ReviewEvent {
     public int getRating() {
         return rating;
     }
+
+    // Optional: Override toString() for better logging
+    @Override
+    public String toString() {
+        return "ReviewEvent{" +
+                "workerId='" + workerId + '\'' +
+                ", rating=" + rating +
+                '}';
+    }
+
 }

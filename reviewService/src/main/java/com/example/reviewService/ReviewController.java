@@ -1,6 +1,7 @@
 package com.example.reviewService;
 
 import com.example.reviewService.model.Review;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +20,20 @@ public class ReviewController {
 
     // Create a new review
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
-        Review createdReview = reviewService.createReview(review);
-        return ResponseEntity.ok(createdReview);
-    }
+        // Create and save the review using the service
+        Review savedReview = reviewService.createReview(
+                review.getWorkerId(),
+                review.getUserId(),
+                review.getRating(),
+                review.getComment(),
+                review.getIsAnonymous()
+        );
 
+        // Return the saved review, now including the generated `id`
+        return new ResponseEntity<>(savedReview, HttpStatus.CREATED);
+    }
     // Get a review by its ID
     @GetMapping("/{id}")
     public ResponseEntity<Review> getReviewById(@PathVariable String id) {
@@ -48,35 +58,62 @@ public class ReviewController {
 
     // Update a review (optional: same endpoint as create but different HTTP method)
     @PutMapping("/{id}")
-//    public ResponseEntity<Review> updateReview(@PathVariable String id, @RequestBody Review updatedReview) {
-//        // First check if the review exists
-//        Optional<Review> existingReview = reviewService.getReviewById(id);
-//
-//        if (existingReview.isPresent()) {
-//            Review reviewToUpdate = new Review.Builder(
-//                    id,
-//                    updatedReview.getWorkerId(),
-//                    updatedReview.getUserId(),
-//                    updatedReview.getRating()
-//            )
-//                    .comment(updatedReview.getComment())
-//                    .tags(updatedReview.getTags())
-//                    .anonymous(updatedReview.isAnonymous())
-//                    .helpfulVotes(updatedReview.getHelpfulVotes())
-//                    .timestamp(updatedReview.getTimestamp())
-//                    .build();
-//
-//            Review savedReview = reviewService.updateReview(reviewToUpdate);
-//            return ResponseEntity.ok(savedReview);
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+    public ResponseEntity<Review> updateReview(@PathVariable String id, @RequestBody Review updatedReview) {
+        Optional<Review> existingReviewOptional = reviewService.getReviewById(id);
+
+        if (existingReviewOptional.isPresent()) {
+            // Get the existing review from the database
+            Review existingReview = existingReviewOptional.get();
+
+            // Update the fields of the existing review
+            if (updatedReview.getWorkerId() != null) {
+                existingReview.setWorkerId(updatedReview.getWorkerId());
+            }
+            if (updatedReview.getUserId() != null) {
+                existingReview.setUserId(updatedReview.getUserId());
+            }
+            if (updatedReview.getRating() != 0) {
+                existingReview.setRating(updatedReview.getRating());
+            }
+            if (updatedReview.getComment() != null) {
+                existingReview.setComment(updatedReview.getComment());
+            }
+            if (updatedReview.getIsAnonymous() != existingReview.getIsAnonymous()) {
+                existingReview.setIsAnonymous(updatedReview.getIsAnonymous());
+            }
+
+            // Save the updated review
+            reviewService.updateReview(existingReview);
+
+            // Return the updated review as the response
+            return ResponseEntity.ok(existingReview);  // Returning the updated review
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     // Delete a review by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable String id) {
         reviewService.deleteReviewById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Endpoint to mark a review as helpful
+    @PutMapping("/{reviewId}/helpful")
+    public ResponseEntity<Review> markReviewAsHelpful(@PathVariable String reviewId) {
+        try {
+            Review updatedReview = reviewService.markReviewAsHelpful(reviewId);  // Increment helpful votes
+            return ResponseEntity.ok(updatedReview);  // Return the updated review
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Review not found
+        }
+    }
+
+    // Get the average rating for a worker
+    @GetMapping("/worker/{workerId}/average-rating")
+    public ResponseEntity<Double> getAverageRating(@PathVariable String workerId) {
+        double averageRating = reviewService.calculateAverageRating(workerId);  // Calculate the average rating
+        return ResponseEntity.ok(averageRating);  // Return the average rating in the response
     }
 }
