@@ -15,9 +15,20 @@ public class ReviewService {
         this.reviewRepository = reviewRepository;
     }
 
-    // Create a new review
-    public Review createReview(Review review) {
-        return reviewRepository.save(review);
+
+    // Create a new review using the Builder pattern
+    public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
+        // Using the Builder to create a Review instance
+        Review review = new Review.Builder()
+                .workerId(workerId)
+                .userId(userId)
+                .rating(rating)
+                .comment(comment)
+                .isAnonymous(isAnonymous)
+                .build();
+
+        // Save the review to MongoDB and return the saved review with the auto-generated ID
+        return reviewRepository.save(review);  // MongoDB will populate the `id` field automatically
     }
 
     // Read a review by ID
@@ -43,5 +54,29 @@ public class ReviewService {
     // Delete a review by ID
     public void deleteReviewById(String id) {
         reviewRepository.deleteById(id);
+    }
+
+    public double calculateAverageRating(String workerId) {
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);  // Fetch reviews by worker ID
+        if (reviews.isEmpty()) {
+            return 0;  // If there are no reviews for the worker, return 0
+        }
+        // Calculate the average rating
+        double totalRating = 0;
+        for (Review review : reviews) {
+            totalRating += review.getRating();
+        }
+        return totalRating / reviews.size();  // Return the average rating
+    }
+    // Method to increment helpful votes
+    public Review markReviewAsHelpful(String reviewId) {
+        Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
+        if (reviewOptional.isPresent()) {
+            Review review = reviewOptional.get();
+            review.incrementHelpfulVotes();  // Increment the helpful votes
+            return reviewRepository.save(review);  // Save the updated review
+        } else {
+            throw new RuntimeException("Review not found");
+        }
     }
 }
