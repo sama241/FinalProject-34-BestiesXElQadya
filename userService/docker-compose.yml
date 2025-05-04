@@ -1,0 +1,26 @@
+services:
+  # Your Spring Boot User Service (app)
+  app:
+    build: .
+    ports:
+      - "8081:8081"  # Map container port 8081 to host port 8081
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/users
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SERVER_PORT=8081
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
