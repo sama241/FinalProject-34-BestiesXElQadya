@@ -18,23 +18,10 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
-    @DeleteMapping("/delete")
-    public String deleteAllWorkers() {
-        workerService.deleteAllWorkers();
-        return "All workers have been deleted successfully.";
-    }
 
-    @PostMapping("/create")
-    public Worker createWorker(@RequestBody Worker workerRequest) {
-        Worker worker = WorkerFactory.createWorker(
-                workerRequest.getName(),
-                workerRequest.getEmail(),
-                workerRequest.getPassword(),
-                workerRequest.getProfession(),
-                workerRequest.getSkills(),
-                workerRequest.getAvailableHours()
-        );
-        return workerService.saveWorker(worker);
+    @PostMapping
+    public Worker createWorker(@RequestBody Worker worker) {
+        return workerRepository.save(worker);
     }
 
     // ✅ Get all Workers
@@ -45,33 +32,61 @@ public class WorkerController {
 
     // ✅ Get Worker by ID
     @GetMapping("/{id}")
-    public Optional<Worker> getWorkerById(@PathVariable String id) {
-        return workerRepository.findById(id);
+    public Worker getWorkerById(@PathVariable String id) {
+        return workerRepository.findById(id).orElse(null);
     }
 
     // ✅ Update Worker
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker workerDetails) {
-        Worker worker = workerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Worker not found with id " + id));
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+        Optional<Worker> optional = workerRepository.findById(id);
+        if (optional.isPresent()) {
+            Worker existing = optional.get();
 
-        worker.setName(workerDetails.getName());
-        worker.setEmail(workerDetails.getEmail());
-        worker.setPassword(workerDetails.getPassword());
-        worker.setProfession(workerDetails.getProfession());
-        worker.setSkills(workerDetails.getSkills());
-        worker.setAvailableHours(workerDetails.getAvailableHours());
-        worker.setBadges(workerDetails.getBadges());
+            if (updatedWorker.getName() != null) {
+                existing.setName(updatedWorker.getName());
+            }
 
-        return workerRepository.save(worker);
+            if (updatedWorker.getEmail() != null) {
+                existing.setEmail(updatedWorker.getEmail());
+            }
+
+            if (updatedWorker.getPassword() != null) {
+                existing.setPassword(updatedWorker.getPassword());
+            }
+
+            if (updatedWorker.getProfession() != null) {
+                existing.setProfession(updatedWorker.getProfession());
+            }
+
+            if (updatedWorker.getSkills() != null) {
+                existing.setSkills(updatedWorker.getSkills());
+            }
+
+            if (updatedWorker.getAvailableHours() != null) {
+                existing.setAvailableHours(updatedWorker.getAvailableHours());
+            }
+
+            if (updatedWorker.getBadges() != null) {
+                existing.setBadges(updatedWorker.getBadges());
+            }
+
+            return workerRepository.save(existing);
+        }
+        return null;
     }
+
 
     // ✅ Delete Worker
     @DeleteMapping("/{id}")
     public String deleteWorker(@PathVariable String id) {
-        workerRepository.deleteById(id);
-        return "Worker deleted successfully!";
+        if (workerRepository.existsById(id)) {
+            workerRepository.deleteById(id);
+            return "Worker deleted";
+        }
+        return "Worker not found";
     }
+
 
     @PutMapping("/workinghours/{id}")
     public String setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours) {
@@ -83,6 +98,10 @@ public class WorkerController {
         }
     }
 
-    // View Booking Orders
+    @PutMapping("/{id}/addBadge")
+    public String addBadge(@PathVariable String id, @RequestParam String badgeType) {
+        return workerService.addBadgeToWorker(id, badgeType);
+    }
+
 
 }

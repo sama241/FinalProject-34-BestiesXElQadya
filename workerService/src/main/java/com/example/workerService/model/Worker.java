@@ -120,6 +120,7 @@ public class Worker {
         return false;
     }
 
+    // Method to check availability
     public boolean isAvailable() {
         return isAvailable;
     }
