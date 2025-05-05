@@ -48,6 +48,20 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // get by username
+    public Optional<User> getByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    // get by email
+    public Optional<User> getByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    // get by phone
+    public Optional<User> getByPhone(String phone) {
+        return userRepository.findByPhone(phone);
+    }
 
     // Update User details
     // say if we update haga haga mesh kolo?
@@ -70,9 +84,9 @@ public class UserService {
     // Favorite Worker Functions
     // Add a worker to the user's favorites list
     public void addFavoriteWorker(UUID userId, UUID workerId) {
-        if (favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
-            throw new RuntimeException("Worker is already in your favorites list.");
-        }
+//        if (favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
+//            throw new RuntimeException("Worker is already in your favorites list.");
+//        }
 
         Favorite favorite = new Favorite(userId, workerId);
         favoriteRepository.save(favorite);

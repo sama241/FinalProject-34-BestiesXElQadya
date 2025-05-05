@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -17,7 +18,6 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
 
     // get all
     @GetMapping
@@ -37,6 +37,42 @@ public class UserController {
     public ResponseEntity<User> getUser(@PathVariable UUID userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
+    }
+
+    // Get User by Username
+    @GetMapping("/username/{username}")
+    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+        Optional<User> optionalUser = userService.getByUsername(username);
+
+        if (optionalUser.isPresent()) {
+            return ResponseEntity.ok(optionalUser.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Get User by Email
+    @GetMapping("/email/{email}")
+    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+        Optional<User> optionalUser = userService.getByEmail(email);
+
+        if (optionalUser.isPresent()) {
+            return ResponseEntity.ok(optionalUser.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Get User by Phone
+    @GetMapping("/phone/{phone}")
+    public ResponseEntity<User> getUserByPhone(@PathVariable String phone) {
+        Optional<User> optionalUser = userService.getByPhone(phone);
+
+        if (optionalUser.isPresent()) {
+            return ResponseEntity.ok(optionalUser.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Update User details
