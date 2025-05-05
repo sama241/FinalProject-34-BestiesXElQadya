@@ -1,7 +1,9 @@
 package com.example.workerService.controller;
-
+import com.example.workerService.factory.WorkerFactoryDispatcher;
+import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
+
 import com.example.workerService.service.WorkerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +22,44 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
+    // ✅ Create new Worker
+//    @PostMapping("/create")
+//    public Worker createWorker22(@RequestBody Worker worker) {
+//        return workerRepository.save(worker);
+//    }
 
-    @PostMapping
-    public Worker createWorker(@RequestBody Worker worker) {
-        return workerRepository.save(worker);
+    @PostMapping("/create")
+    public Worker createWorker(@RequestBody Worker workerRequest) {
+
+        WorkerProfileType profile = WorkerFactoryDispatcher.getWorkerProfile(workerRequest.getProfession());
+        System.out.println("Hiring: " + profile.getWorkerRole()); // Optional log
+
+        // Manually create the worker using the info and factory output
+        Worker worker = new Worker(
+                workerRequest.getName(),
+                workerRequest.getEmail(),
+                workerRequest.getPassword(),
+                workerRequest.getProfession(),
+                workerRequest.getSkills(),
+                workerRequest.getAvailableHours()
+        );
+
+        return workerService.saveWorker(worker);
     }
 
+    // ✅ Get all Workers
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
+    // ✅ Get Worker by ID
     @GetMapping("/{id}")
     public Worker getWorkerById(@PathVariable String id) {
         return workerRepository.findById(id).orElse(null);
     }
 
+    // ✅ Update Worker
     @PutMapping("/{id}")
     public ResponseEntity<?> updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
         String sessionWorkerId = (String) session.getAttribute("workerId");
