@@ -12,7 +12,7 @@ public class CancelBooking implements BookingCommand {
     @Override
     public void execute(Booking booking) {
         if (booking.getStatus() == BookingStatus.CONFIRMED &&
-                booking.getStartTime().isAfter(LocalDateTime.now().plusHours(24))) {
+            booking.getStartTime().isAfter(LocalDateTime.now().plusHours(24))) {
             booking.setStatus(BookingStatus.CANCELLED);
             booking.setUpdatedAt(LocalDateTime.now());
         } else {
