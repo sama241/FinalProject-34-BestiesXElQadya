@@ -1,36 +1,34 @@
 package com.example.userService.controller;
 
+
 import com.example.userService.command.Command;
 import com.example.userService.command.LoginCommand;
 import com.example.userService.command.LogoutCommand;
 import com.example.userService.model.User;
-import com.example.userService.repository.UserRepository;
 import com.example.userService.service.UserService;
 import com.example.userService.singleton.UserSessionManager;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user/auth")
 public class UserAuthController {
 
-    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private  StringRedisTemplate redisTemplate;
 
     @Autowired
-    private UserService userService;
+    private  UserService userService;
 
-    public UserAuthController(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-
+//    @Autowired
+//    public UserAuthController(StringRedisTemplate redisTemplate, UserService userService) {
+//        this.redisTemplate = redisTemplate;
+//        this.userService = userService;
+//    }
     @GetMapping("/login")
     public String login(@RequestParam String email, @RequestParam String password, HttpSession session) {
         User user = userService.getByEmail(email);

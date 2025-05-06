@@ -12,7 +12,7 @@ public class UserSessionManager {
 
     private static UserSessionManager instance;
 
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private static final String ACTIVE_USERS_KEY = "activeUsers";
 
     // Private constructor
