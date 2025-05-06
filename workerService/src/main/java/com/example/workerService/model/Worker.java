@@ -10,7 +10,6 @@ public class Worker {
 
     @Id
     private String id;
-
     private String name;
     private String email;
     private String password;
@@ -108,9 +107,6 @@ public class Worker {
         this.badges = badges;
     }
 
-    // 🔥 Helper Methods
-
-    // Method to book an available hour
     public boolean bookHour(int hour) {
         if (availableHours.contains(hour)) {
             availableHours.remove(Integer.valueOf(hour));
