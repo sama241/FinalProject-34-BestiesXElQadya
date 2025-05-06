@@ -34,7 +34,6 @@ public class WorkerController {
         WorkerProfileType profile = WorkerFactoryDispatcher.getWorkerProfile(workerRequest.getProfession());
         System.out.println("Hiring: " + profile.getWorkerRole()); // Optional log
 
-        // Manually create the worker using the info and factory output
         Worker worker = new Worker(
                 workerRequest.getName(),
                 workerRequest.getEmail(),
