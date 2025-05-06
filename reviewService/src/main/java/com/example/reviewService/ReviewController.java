@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")
-public class ReviewController {
+public class gitReviewController {
 
     private final ReviewService reviewService;
 
