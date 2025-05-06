@@ -6,8 +6,15 @@
   </component>
 </project>
 =======
+<<<<<<< HEAD
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+  </component>
+</project>
+=======
     <component name="VcsDirectoryMappings">
         <mapping directory="$PROJECT_DIR$" vcs="Git" />
     </component>
 </project>
 >>>>>>> origin/rotana
+>>>>>>> origin/sara
