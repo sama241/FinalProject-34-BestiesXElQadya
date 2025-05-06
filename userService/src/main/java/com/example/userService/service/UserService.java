@@ -54,9 +54,10 @@ public class UserService {
     }
 
     // get by email
-    public Optional<User> getByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User getByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
+
 
     // get by phone
     public Optional<User> getByPhone(String phone) {

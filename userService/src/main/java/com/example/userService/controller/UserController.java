@@ -54,10 +54,10 @@ public class UserController {
     // Get User by Email
     @GetMapping("/email/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        Optional<User> optionalUser = userService.getByEmail(email);
+        User optionalUser = userService.getByEmail(email);
 
-        if (optionalUser.isPresent()) {
-            return ResponseEntity.ok(optionalUser.get());
+        if (optionalUser!=null) {
+            return ResponseEntity.ok(optionalUser);
         } else {
             return ResponseEntity.notFound().build();
         }
