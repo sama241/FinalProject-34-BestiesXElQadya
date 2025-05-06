@@ -5,10 +5,10 @@ FROM openjdk:25-ea-4-jdk-oraclelinux9
 WORKDIR /app
 
 # Copy the built jar file into the container
-COPY target/reviewService-0.0.1-SNAPSHOT.jar app.jar
+COPY target/workerService-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose the port 8084
-EXPOSE 8084
+# Expose the port 8082
+EXPOSE 8082
 
 # Command to run the app
 ENTRYPOINT ["java", "-jar", "app.jar"]

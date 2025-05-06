@@ -4,16 +4,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Document(collection = "reviews")
 public class Review {
 
     @Id
-    private String id;  // Let MongoDB generate the ID automatically
+    private String id;
 
     @Indexed
     private String workerId;
@@ -63,7 +60,6 @@ public class Review {
         isAnonymous = anonymous;
     }
 
-    // Default constructor
     public Review() {}
 
     // Private constructor for the Builder pattern
@@ -76,9 +72,8 @@ public class Review {
         this.isAnonymous = builder.isAnonymous;
     }
 
-    // Getters for the fields
     public String getId() {
-        return id;  // MongoDB should populate this
+        return id;
     }
 
     public String getWorkerId() {
@@ -124,9 +119,8 @@ public class Review {
                 '}';
     }
 
-    // The Builder class
     public static class Builder {
-        private String id;  // Do not set id here, leave it null for MongoDB
+        private String id;
         private String workerId;
         private String userId;
         private int rating;

@@ -1,5 +1,6 @@
 package com.example.reviewService;
 
+import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,11 @@ public class ReviewService {
     // Create a new review using the Builder pattern
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
         // Using the Builder to create a Review instance
+        Rating validRating = Rating.fromValue(rating);
         Review review = new Review.Builder()
                 .workerId(workerId)
                 .userId(userId)
-                .rating(rating)
+                .rating(validRating.getValue())
                 .comment(comment)
                 .isAnonymous(isAnonymous)
                 .build();

@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")
-public class gitReviewController {
+public class ReviewController {
 
     private final ReviewService reviewService;
 
@@ -22,6 +22,7 @@ public class gitReviewController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
+
         // Create and save the review using the service
         Review savedReview = reviewService.createReview(
                 review.getWorkerId(),
