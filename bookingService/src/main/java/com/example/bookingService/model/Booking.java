@@ -12,18 +12,39 @@ public class Booking {
     private Long id;
 
     private Long userId;     // Reference to UserService
-    private Long workerId;   // Reference to WorkerService
+    private String workerId;  // Reference to WorkerService
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDateTime timeslot;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
     private String location;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+
+
+    //constructors
+    public Booking() {}
+
+    public Booking(Long userId, String workerId, LocalDateTime timeslot,
+                   BookingStatus status, String location) {
+        this.userId = userId;
+        this.workerId = workerId;
+        this.timeslot=timeslot;
+        this.status = status;
+        this.location = location;
+    }
+
+    public Booking(Long id, Long userId, String workerId, LocalDateTime timeslot,
+                   BookingStatus status, String location) {
+        this.id = id;
+        this.userId = userId;
+        this.workerId = workerId;
+        this.timeslot = timeslot;
+        this.status = status;
+        this.location = location;
+    }
+
 
     // Getters and Setters
 
@@ -39,28 +60,13 @@ public class Booking {
         return userId;
     }
 
-    public Long getWorkerId() {
+    public String getWorkerId() {
         return workerId;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
 
     public String getLocation() {
         return location;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 
     public void setId(Long id) {
@@ -71,16 +77,8 @@ public class Booking {
         this.userId = userId;
     }
 
-    public void setWorkerId(Long workerId) {
+    public void setWorkerId(String workerId) {
         this.workerId = workerId;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
     }
 
     public void setStatus(BookingStatus status) {
@@ -91,11 +89,11 @@ public class Booking {
         this.location = location;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public LocalDateTime getTimeslot() {
+        return timeslot;
+    }
+    public void setTimeslot(LocalDateTime timeslot) {
+        this.timeslot = timeslot;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }

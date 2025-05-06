@@ -1,4 +1,4 @@
-package com.example.bookingService.service;
+package com.example.bookingService.command;
 
 import com.example.bookingService.model.Booking;
 

@@ -1,16 +1,17 @@
 package com.example.bookingService.controller;
 
+import com.example.bookingService.client.WorkerClient;
+import com.example.bookingService.command.BookingDispatcher;
 import com.example.bookingService.model.Booking;
 import com.example.bookingService.model.BookingStatus;
 import com.example.bookingService.repository.BookingRepository;
-import com.example.bookingService.service.RescheduleBooking;
+import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -21,7 +22,8 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> getAll() {
-        return bookingRepository.findAll();
+        return bookingService.findAll();
+
     }
 
     @GetMapping("/{id}")
@@ -29,18 +31,54 @@ public class BookingController {
         return bookingRepository.findById(id).orElseThrow();
     }
 
+    @Autowired
+    private BookingService bookingService;
+
+    @Autowired
+    private WorkerClient workerClient;
+
+    @Autowired
+    private BookingDispatcher dispatcher;
+
+
     @PostMapping
-    public Booking create(@RequestBody Booking booking) {
-        booking.setCreatedAt(LocalDateTime.now());
-        booking.setUpdatedAt(LocalDateTime.now());
-        booking.setStatus(BookingStatus.PENDING);
-        return bookingRepository.save(booking);
+    public ResponseEntity<?> create(@RequestBody Booking booking) {
+        int hour = booking.getTimeslot().getHour();
+
+        // Try to "book" by removing a time slot
+        String result = workerClient.removeTimeSlots(booking.getWorkerId(), hour);
+
+        if (!result.toLowerCase().contains("success")) {
+            return ResponseEntity.badRequest().body("Selected hour is not available.");
+        }
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+        return ResponseEntity.ok(bookingService.save(booking));
     }
+
+
+    @PutMapping("/{id}/dispatch")
+    public ResponseEntity<?> executeCommand(@PathVariable Long id,
+                                            @RequestParam String command,
+                                            @RequestParam(required = false) String newTime) {
+        Booking booking = bookingService.findById(id);
+
+        if (command.equalsIgnoreCase("reschedule")) {
+            if (newTime == null) return ResponseEntity.badRequest().body("newTime is required");
+            LocalDateTime parsed = LocalDateTime.parse(newTime);
+            dispatcher.dispatch(command, booking, parsed);
+        } else {
+            dispatcher.dispatch(command, booking, null);
+        }
+
+        bookingService.save(booking);
+        return ResponseEntity.ok("Command executed: " + command);
+    }
+
 
     @PutMapping("/{id}")
     public Booking update(@PathVariable Long id, @RequestBody Booking booking) {
         booking.setId(id);
-        booking.setUpdatedAt(LocalDateTime.now());
         return bookingRepository.save(booking);
     }
 
