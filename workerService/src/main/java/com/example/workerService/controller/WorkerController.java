@@ -2,11 +2,11 @@ package com.example.workerService.controller;
 import com.example.workerService.factory.WorkerFactory;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
-
 import com.example.workerService.service.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -30,13 +30,27 @@ public class WorkerController {
         return workerRepository.findAll();
     }
 
-    // ✅ Get Worker by ID
+
     @GetMapping("/{id}")
-    public Worker getWorkerById(@PathVariable String id) {
-        return workerRepository.findById(id).orElse(null);
+    public ResponseEntity<?> getWorker(@PathVariable String id) {
+        Worker worker = workerService.getWorkerById(id);
+        if (worker == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
+        }
+        return ResponseEntity.ok(worker);
     }
 
-    // ✅ Update Worker
+    @DeleteMapping("/{id}")
+    public String deleteWorker(@PathVariable String id) {
+        if (workerRepository.existsById(id)) {
+            workerRepository.deleteById(id);
+            workerService.deleteCachedWorker(id);
+            return "Worker deleted";
+        }
+        return "Worker not found";
+    }
+
+
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
         Optional<Worker> optional = workerRepository.findById(id);
@@ -71,20 +85,15 @@ public class WorkerController {
                 existing.setBadges(updatedWorker.getBadges());
             }
 
-            return workerRepository.save(existing);
+            Worker saved = workerRepository.save(existing);
+
+            // 🔁 Refresh cache with updated worker
+            workerService.cacheWorker(saved);
+
+            return saved;
         }
+
         return null;
-    }
-
-
-    // ✅ Delete Worker
-    @DeleteMapping("/{id}")
-    public String deleteWorker(@PathVariable String id) {
-        if (workerRepository.existsById(id)) {
-            workerRepository.deleteById(id);
-            return "Worker deleted";
-        }
-        return "Worker not found";
     }
 
 
@@ -103,5 +112,22 @@ public class WorkerController {
         return workerService.addBadgeToWorker(id, badgeType);
     }
 
+
+    @PostMapping("/cache")
+    public ResponseEntity<String> cacheWorker(@RequestBody Worker worker) {
+        workerService.cacheWorker(worker);
+        return ResponseEntity.ok("Worker cached for 10 minutes.");
+    }
+
+    @GetMapping("/cache/{id}")
+    public ResponseEntity<?> getCachedWorker(@PathVariable String id) {
+        Worker worker = workerService.getCachedWorker(id);
+        if (worker == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Worker not in cache or TTL expired.");
+        }
+        return ResponseEntity.ok(worker);
+    }
 
 }
