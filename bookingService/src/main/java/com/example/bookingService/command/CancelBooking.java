@@ -20,9 +20,10 @@ public class CancelBooking implements BookingCommand {
                 booking.getTimeslot().isAfter(LocalDateTime.now().plusHours(2))) {
 
             int hour = booking.getTimeslot().getHour();
-            workerClient.addTimeSlot(booking.getWorkerId().toString(), hour);
-
+            String result= workerClient.addTimeSlot(booking.getWorkerId(), hour);
             booking.setStatus(BookingStatus.CANCELLED);
+
+
         } else {
             throw new IllegalStateException("Booking cannot be cancelled.");
         }

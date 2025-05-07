@@ -3,7 +3,7 @@ package com.example.bookingService.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "worker-service", url = "http://localhost:8082/workers")
+@FeignClient(name = "worker-service", url = "http://worker-service:8082/workers")
 public interface WorkerClient {
 
     @PutMapping("/{workerId}/add-timeslot")

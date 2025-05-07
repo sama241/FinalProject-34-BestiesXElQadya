@@ -13,8 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - booking_pgdata:/var/lib/postgresql/data
-    networks:
-      - backend
+
 
   booking-service:
     build: .
@@ -27,11 +26,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://booking-db:5432/booking_db
       SPRING_DATASOURCE_USERNAME: booking_user
       SPRING_DATASOURCE_PASSWORD: booking_pass
-    networks:
-      - backend
+
 
 volumes:
   booking_pgdata:
 
 networks:
-  backend:
+  default:
+    external: true
+    name: connection

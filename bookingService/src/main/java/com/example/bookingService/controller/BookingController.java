@@ -80,11 +80,12 @@ public class BookingController {
         if (command.equalsIgnoreCase("reschedule")) {
             if (newTime == null) return ResponseEntity.badRequest().body("newTime is required");
             LocalDateTime parsed = LocalDateTime.parse(newTime);
-            dispatcher.dispatch(command, booking, parsed);
-        } else {
-            dispatcher.dispatch(command, booking, null);
-        }
+            dispatcher.reschedule(command, booking, parsed);
 
+        } else {
+            dispatcher.cancel(command, booking);
+
+        }
         bookingService.save(booking);
         return ResponseEntity.ok("Command executed: " + command);
     }
