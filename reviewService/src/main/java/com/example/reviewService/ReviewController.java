@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
