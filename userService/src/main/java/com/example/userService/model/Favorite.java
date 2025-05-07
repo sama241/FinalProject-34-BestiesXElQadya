@@ -15,8 +15,8 @@ public class Favorite {
     // Constructor
 
     // tab w id el record?
-    public Favorite(UUID userId, UUID workerId) {
-        this.id = UUID.randomUUID();
+    public Favorite(UUID userId, UUID workerId, UUID id) {
+        this.id = id;
         this.userId = userId;
         this.workerId = workerId;
     }
@@ -24,6 +24,13 @@ public class Favorite {
     public Favorite() {
 
     }
+
+    public Favorite(UUID userId, UUID workerId ){
+        this.id = UUID.randomUUID();
+        this.userId = userId;
+        this.workerId = workerId;
+    }
+
 
     public UUID getUserId() {
         return userId;

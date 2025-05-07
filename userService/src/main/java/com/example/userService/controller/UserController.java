@@ -3,6 +3,7 @@ package com.example.userService.controller;
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
@@ -92,18 +93,33 @@ public class UserController {
 
     // Favorite Worker Functions
 
-    // Add Worker to Favorites
-    @PostMapping("/{userId}/favorites")
-    public ResponseEntity<Void> addFavoriteWorker(@PathVariable UUID userId, @RequestParam UUID workerId) {
-        userService.addFavoriteWorker(userId, workerId);
-        return ResponseEntity.ok().build();
+    @PostMapping("/favorites")
+    public ResponseEntity<String> addFavoriteWorker(@RequestBody Favorite favorite) {
+        Favorite result = userService.addFavoriteWorker(favorite);
+
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Favorite worker already exists.");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
     }
 
+
     // Remove Worker from Favorites
-    @DeleteMapping("/{userId}/favorites")
-    public ResponseEntity<Void> removeFavoriteWorker(@PathVariable UUID userId, @RequestParam UUID workerId) {
-        userService.removeFavoriteWorker(userId, workerId);
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/favorites")
+    public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
+        UUID workerId = favorite.getWorkerId();
+        UUID userId = favorite.getUserId();
+        System.out.println("the user is " + userId);
+        System.out.println("the worker is " + workerId);
+
+        String result = userService.removeFavoriteWorker(userId, workerId);
+
+        if (result.equals("Favorite worker not found.")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     // Get Favorite Workers

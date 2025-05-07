@@ -7,6 +7,7 @@ import com.example.userService.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.userService.repository.FavoriteRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,22 +85,37 @@ public class UserService {
 
     // Favorite Worker Functions
     // Add a worker to the user's favorites list
-    public void addFavoriteWorker(UUID userId, UUID workerId) {
-//        if (favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
-//            throw new RuntimeException("Worker is already in your favorites list.");
-//        }
+//    public void addFavoriteWorker(UUID userId, UUID workerId) {
+////        if (favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
+////            throw new RuntimeException("Worker is already in your favorites list.");
+////        }
+//        System.out.print(userId);
+//        System.out.print(workerId);
+//
+//        Favorite favorite = new Favorite(userId, workerId);
+//        System.out.println(favorite);
+//        favoriteRepository.save(favorite);
+//    }
 
-        Favorite favorite = new Favorite(userId, workerId);
-        favoriteRepository.save(favorite);
+    @Transactional
+    public Favorite addFavoriteWorker(Favorite favorite) {
+        if (favoriteRepository.existsByUserIdAndWorkerId(favorite.getUserId(), favorite.getWorkerId())) {
+            return null;
+        }
+
+        return favoriteRepository.save(favorite);
     }
 
+
     // Remove a worker from the user's favorites list
-    public void removeFavoriteWorker(UUID userId, UUID workerId) {
+    @Transactional
+    public String removeFavoriteWorker(UUID userId, UUID workerId) {
         if (!favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
-            throw new RuntimeException("Favorite worker not found.");
+            return "Favorite worker not found.";
         }
 
         favoriteRepository.deleteByUserIdAndWorkerId(userId, workerId);
+        return "Worker removed from favorites.";
     }
 
     // Get the list of favorite workers for a user
