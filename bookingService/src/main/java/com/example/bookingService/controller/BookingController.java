@@ -31,6 +31,19 @@ public class BookingController {
         return bookingRepository.findById(id).orElseThrow();
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable String userId) {
+        List<Booking> bookings = bookingService.getBookingsByUserId(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/worker/{workerId}")
+    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+        return ResponseEntity.ok(bookings);
+    }
+
+
     @Autowired
     private BookingService bookingService;
 
@@ -41,12 +54,13 @@ public class BookingController {
     private BookingDispatcher dispatcher;
 
 
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Booking booking) {
         int hour = booking.getTimeslot().getHour();
 
         // Try to "book" by removing a time slot
-        String result = workerClient.removeTimeSlots(booking.getWorkerId(), hour);
+        String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
         if (!result.toLowerCase().contains("success")) {
             return ResponseEntity.badRequest().body("Selected hour is not available.");
@@ -66,11 +80,12 @@ public class BookingController {
         if (command.equalsIgnoreCase("reschedule")) {
             if (newTime == null) return ResponseEntity.badRequest().body("newTime is required");
             LocalDateTime parsed = LocalDateTime.parse(newTime);
-            dispatcher.dispatch(command, booking, parsed);
-        } else {
-            dispatcher.dispatch(command, booking, null);
-        }
+            dispatcher.reschedule(command, booking, parsed);
 
+        } else {
+            dispatcher.cancel(command, booking);
+
+        }
         bookingService.save(booking);
         return ResponseEntity.ok("Command executed: " + command);
     }

@@ -60,4 +60,41 @@ public class WorkerService {
         } else {
             throw new RuntimeException("Worker not found with id: " + workerId);
         }
-    }}
+    }
+    public boolean addTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean added = worker.addAvailableHour(timeSlot);
+
+        if (added) {
+            workerRepository.save(worker);
+        }
+
+        return added;
+    }
+
+    public boolean removeTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean removed = worker.removeAvailableHour(timeSlot);
+
+        if (removed) {
+            workerRepository.save(worker);
+        }
+
+        return removed;
+    }
+
+
+
+
+
+
+
+
+
+}

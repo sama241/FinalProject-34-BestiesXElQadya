@@ -11,8 +11,8 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;     // Reference to UserService
-    private String workerId;  // Reference to WorkerService
+    private String workerId;
+    private String userId;
 
     private LocalDateTime timeslot;
 
@@ -26,7 +26,7 @@ public class Booking {
     //constructors
     public Booking() {}
 
-    public Booking(Long userId, String workerId, LocalDateTime timeslot,
+    public Booking(String userId, String workerId, LocalDateTime timeslot,
                    BookingStatus status, String location) {
         this.userId = userId;
         this.workerId = workerId;
@@ -35,7 +35,7 @@ public class Booking {
         this.location = location;
     }
 
-    public Booking(Long id, Long userId, String workerId, LocalDateTime timeslot,
+    public Booking(Long id, String userId, String workerId, LocalDateTime timeslot,
                    BookingStatus status, String location) {
         this.id = id;
         this.userId = userId;
@@ -56,7 +56,7 @@ public class Booking {
         return id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
@@ -73,7 +73,7 @@ public class Booking {
         this.id = id;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
