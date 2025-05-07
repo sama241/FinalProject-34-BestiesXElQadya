@@ -5,9 +5,11 @@ import com.example.workerService.repository.WorkerRepository;
 
 import com.example.workerService.service.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -102,6 +104,29 @@ public class WorkerController {
     public String addBadge(@PathVariable String id, @RequestParam String badgeType) {
         return workerService.addBadgeToWorker(id, badgeType);
     }
+
+
+    @PutMapping("/{workerId}/add-timeslot")
+    public ResponseEntity<String> addTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.addTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour added successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour already exists or worker not found.");
+        }
+    }
+
+    // ➖ Remove time slot (hour) from worker
+    @PutMapping("/{workerId}/remove-timeslot")
+    public ResponseEntity<String> removeTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.removeTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour removed successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour not found or worker not found.");
+        }
+    }
+
 
 
 }
