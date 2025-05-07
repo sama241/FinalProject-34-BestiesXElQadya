@@ -32,10 +32,10 @@ public class RescheduleBooking implements BookingCommand {
         int newHour = newTime.getHour();
 
         // Add old hour back (increase availability)
-        workerClient.addTimeSlots(booking.getWorkerId(), 1);
+        workerClient.addTimeSlot(booking.getWorkerId(), 1);
 
         // Try removing one slot (simulate new booking)
-        String result = workerClient.removeTimeSlots(booking.getWorkerId(), 1);
+        String result = workerClient.removeTimeSlot(booking.getWorkerId(), 1);
         if (!result.toLowerCase().contains("success")) {
             throw new IllegalStateException("New hour not available.");
         }

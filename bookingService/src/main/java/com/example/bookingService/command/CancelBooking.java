@@ -20,7 +20,7 @@ public class CancelBooking implements BookingCommand {
                 booking.getTimeslot().isAfter(LocalDateTime.now().plusHours(2))) {
 
             int hour = booking.getTimeslot().getHour();
-            workerClient.addTimeSlots(booking.getWorkerId().toString(), hour);
+            workerClient.addTimeSlot(booking.getWorkerId().toString(), hour);
 
             booking.setStatus(BookingStatus.CANCELLED);
         } else {

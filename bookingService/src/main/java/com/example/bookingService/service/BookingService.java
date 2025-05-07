@@ -45,4 +45,13 @@ public class BookingService {
     public void delete(Long id) {
         bookingRepository.deleteById(id);
     }
+    public List<Booking> getBookingsByUserId(String userId) {
+        return bookingRepository.findByUserId(userId);
+    }
+
+    public List<Booking> getBookingsByWorkerId(String workerId) {
+        return bookingRepository.findByWorkerId(workerId);
+    }
+
+
 }

@@ -3,13 +3,14 @@ package com.example.bookingService.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "worker-service", url = "http://worker-service:8082")
+@FeignClient(name = "worker-service", url = "http://localhost:8082/workers")
 public interface WorkerClient {
 
-    @PutMapping("/workers/{id}/AddTimeslots")
-    String addTimeSlots(@PathVariable String id, @RequestBody int timeSlots);
+    @PutMapping("/{workerId}/add-timeslot")
+    String addTimeSlot(@PathVariable("workerId") String workerId, @RequestParam("hour") int hour);
 
-    @PutMapping("/workers/{id}/RemoveTimeslots")
-    String removeTimeSlots(@PathVariable String id, @RequestBody int timeSlot);
+    @PutMapping("/{workerId}/remove-timeslot")
+    String removeTimeSlot(@PathVariable("workerId") String workerId, @RequestParam("hour") int hour);
 }
+
 
