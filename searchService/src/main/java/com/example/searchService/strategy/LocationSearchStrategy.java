@@ -1,62 +1,40 @@
 package com.example.searchService.strategy;
 
+import com.example.searchService.client.WorkerClient;
 import com.example.searchService.model.SearchRequest;
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 public class LocationSearchStrategy implements SearchStrategy {
 
-    private final MongoTemplate mongoTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final WorkerClient workerClient;
 
     @Autowired
-    public LocationSearchStrategy(MongoTemplate mongoTemplate, RedisTemplate<String, Object> redisTemplate) {
-        this.mongoTemplate = mongoTemplate;
-        this.redisTemplate = redisTemplate;
+    public LocationSearchStrategy(WorkerClient workerClient) {
+        this.workerClient = workerClient;
     }
 
     @Override
     public List<Map<String, Object>> search(SearchRequest request) {
-        String key = "search:location:" + request.getLocation();
-        Object cachedResult = redisTemplate.opsForValue().get(key);
+        // Fetch all workers from the WorkerClient
+        List<Map<String, Object>> workers = workerClient.getWorkers();
 
-        if (cachedResult != null) {
-            return (List<Map<String, Object>>) cachedResult;
-        }
-
-        Query query = new Query();
-        query.addCriteria(Criteria.where("location").is(request.getLocation()));
-
-        List<Document> workers = mongoTemplate.find(query, Document.class, "workers");
-
-        List<Map<String, Object>> workerDetailsList = new ArrayList<>();
-        for (Document workerDoc : workers) {
-            workerDetailsList.add(extractWorkerDetails(workerDoc));
-        }
-
-        redisTemplate.opsForValue().set(key, workerDetailsList, 10, TimeUnit.MINUTES);
-
-        return workerDetailsList;
+        // Filter workers by location and exclude 'id' and 'password' fields
+        return workers.stream()
+                .filter(worker -> worker.get("location") != null && worker.get("location").equals(request.getLocation()))
+                .map(worker -> removeSensitiveData(worker)) // Remove 'id' and 'password'
+                .collect(Collectors.toList());
     }
 
-    private Map<String, Object> extractWorkerDetails(Document doc) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", doc.getString("name"));
-        map.put("profession", doc.getString("profession"));
-        map.put("location", doc.getString("location"));
-        map.put("skills", doc.getList("skills", String.class));
-        map.put("availableHours", doc.getList("availableHours", Integer.class));
-        map.put("badges", doc.getList("badges", String.class));
-        map.put("isAvailable", doc.getBoolean("isAvailable"));
-        return map;
+    // Method to exclude 'id' and 'password' from the worker map
+    private Map<String, Object> removeSensitiveData(Map<String, Object> worker) {
+        Map<String, Object> filteredWorker = new HashMap<>(worker);
+        filteredWorker.remove("id"); // Remove the 'id' field
+        filteredWorker.remove("password"); // Remove the 'password' field
+        return filteredWorker;
     }
 }
