@@ -2,6 +2,7 @@ package com.example.userService.controller;
 
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
+import com.example.userService.client.BookingClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +21,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BookingClient bookingClient;
 
     // get all
     @GetMapping
@@ -128,4 +133,14 @@ public class UserController {
         List<Favorite> favorites = userService.getFavoriteWorkers(userId);
         return ResponseEntity.ok(favorites);
     }
+
+
+    @GetMapping("/{userId}/bookings")
+    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@PathVariable String userId) {
+        List<Map<String, Object>>  bookings = bookingClient.getBookingsByUserId(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+
+
 }

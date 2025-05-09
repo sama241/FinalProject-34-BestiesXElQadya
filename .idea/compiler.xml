@@ -13,10 +13,6 @@
         <module name="userService" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="reviewService" target="23" />
-      <module name="searchService" target="23" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

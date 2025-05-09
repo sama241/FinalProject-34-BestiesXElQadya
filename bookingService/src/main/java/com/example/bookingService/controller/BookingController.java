@@ -20,11 +20,13 @@ public class BookingController {
     @Autowired
     private BookingRepository bookingRepository;
 
+
     @GetMapping
     public List<Booking> getAll() {
         return bookingService.findAll();
 
     }
+
 
     @GetMapping("/{id}")
     public Booking getById(@PathVariable Long id) {
@@ -101,6 +103,7 @@ public class BookingController {
     public void delete(@PathVariable Long id) {
         bookingRepository.deleteById(id);
     }
+
 
 
 

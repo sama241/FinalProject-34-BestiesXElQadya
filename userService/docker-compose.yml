@@ -36,3 +36,8 @@ services:
       - "6379:6379"
     restart: always
 
+networks:
+  default:
+    external: true
+    name: connection
+
