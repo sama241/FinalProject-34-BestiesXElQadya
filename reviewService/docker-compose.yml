@@ -17,7 +17,7 @@ services:
     depends_on:
       - mongo-review-db
     networks:
-      - app-network
+      - connection
     restart: always
 
   mongo-review-db:
@@ -30,8 +30,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     networks:
-      - app-network
+      - connection
 
 networks:
-  app-network:
+  connection:
     external: true
