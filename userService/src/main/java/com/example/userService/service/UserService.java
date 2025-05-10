@@ -67,7 +67,7 @@ public class UserService {
 
     // Update User details
     // say if we update haga haga mesh kolo?
-<<<<<<< HEAD
+//<<<<<<< HEAD
 // Update User details (partial update: only non-null fields are updated)
     public User updateUsername(UUID userId, String username) {
         User user = getUserById(userId);
@@ -146,7 +146,7 @@ public class UserService {
 //        }
 //    }
 
-=======
+//=======
     public User updateUser(UUID userId, User userDetails) {
         // Fetch the existing user
         User user = getUserById(userId);
@@ -180,7 +180,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
->>>>>>> 2abc34bb5f29b5025310d8d7ca41d71ca75b8b04
+//>>>>>>> 2abc34bb5f29b5025310d8d7ca41d71ca75b8b04
 
     // Delete User by ID
     public void deleteUser(UUID userId) {
@@ -213,7 +213,7 @@ public class UserService {
 
     // Remove a worker from the user's favorites list
     @Transactional
-    public String removeFavoriteWorker(UUID userId, UUID workerId) {
+    public String removeFavoriteWorker(UUID userId, String workerId) {
         if (!favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
             return "Favorite worker not found.";
         }
