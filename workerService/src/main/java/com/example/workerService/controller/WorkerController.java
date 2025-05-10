@@ -4,10 +4,9 @@ import com.example.workerService.factory.WorkerFactoryDispatcher;
 import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
-
 import com.example.workerService.service.WorkerService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,13 +49,11 @@ public class WorkerController {
         return workerService.saveWorker(worker);
     }
 
-    // ✅ Get all Workers
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    // ✅ Get Worker by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
@@ -66,13 +63,21 @@ public class WorkerController {
         return ResponseEntity.ok(worker);
     }
 
-    // ✅ Update Worker
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
+
+        // 🛡️ Check if the user is logged in
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+        if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
+            throw new RuntimeException("Unauthorized: You can only update your own profile.");
+        }
+
+        // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(id);
         if (optional.isPresent()) {
             Worker existing = optional.get();
 
+            // ✅ Update only the provided fields
             if (updatedWorker.getName() != null) {
                 existing.setName(updatedWorker.getName());
             }
@@ -101,6 +106,7 @@ public class WorkerController {
                 existing.setBadges(updatedWorker.getBadges());
             }
 
+            // 💾 Save the updated worker
             Worker saved = workerRepository.save(existing);
 
             // 🔁 Refresh cache with updated worker
@@ -108,11 +114,11 @@ public class WorkerController {
 
             return saved;
         }
-        return null;
+
+        throw new RuntimeException("Worker not found.");
     }
 
 
-    // ✅ Delete Worker
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteWorker(@PathVariable String id, HttpSession session) {
         String sessionWorkerId = (String) session.getAttribute("workerId");
@@ -131,7 +137,6 @@ public class WorkerController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found");
     }
-
 
     @PutMapping("/workinghours/{id}")
     public ResponseEntity<String> setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours, HttpSession session) {

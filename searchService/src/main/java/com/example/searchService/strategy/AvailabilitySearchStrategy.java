@@ -1,13 +1,13 @@
 package com.example.searchService.strategy;
 
+import com.example.searchService.client.WorkerClient;
 import com.example.searchService.model.SearchRequest;
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -15,13 +15,15 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AvailabilitySearchStrategy implements SearchStrategy {
 
-    private final MongoTemplate mongoTemplate;
+    private final WorkerClient workerClient;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public AvailabilitySearchStrategy(MongoTemplate mongoTemplate, RedisTemplate<String, Object> redisTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public AvailabilitySearchStrategy(WorkerClient workerClient, RedisTemplate<String, Object> redisTemplate, MongoTemplate mongoTemplate) {
+        this.workerClient = workerClient;
         this.redisTemplate = redisTemplate;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -30,33 +32,26 @@ public class AvailabilitySearchStrategy implements SearchStrategy {
         Object cachedResult = redisTemplate.opsForValue().get(key);
 
         if (cachedResult != null) {
+            // Return cached result if available
             return (List<Map<String, Object>>) cachedResult;
         }
 
+        // If no cached result, query the database
         Query query = new Query();
         query.addCriteria(Criteria.where("isAvailable").is(request.isAvailable()));
+        List<Map<String, Object>> workers = workerClient.getWorkers();
 
-        List<Document> workers = mongoTemplate.find(query, Document.class, "workers");
-
-        List<Map<String, Object>> workerDetailsList = new ArrayList<>();
-        for (Document workerDoc : workers) {
-            workerDetailsList.add(extractWorkerDetails(workerDoc));
+        // Filter workers based on availability
+        List<Map<String, Object>> filteredWorkers = new ArrayList<>();
+        for (Map<String, Object> worker : workers) {
+            if (worker.get("isAvailable") != null && worker.get("isAvailable").equals(request.isAvailable())) {
+                filteredWorkers.add(worker);
+            }
         }
 
-        redisTemplate.opsForValue().set(key, workerDetailsList, 10, TimeUnit.MINUTES);
+        // Cache the result for future use
+        redisTemplate.opsForValue().set(key, filteredWorkers, 10, TimeUnit.MINUTES);
 
-        return workerDetailsList;
-    }
-
-    private Map<String, Object> extractWorkerDetails(Document doc) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", doc.getString("name"));
-        map.put("profession", doc.getString("profession"));
-        map.put("location", doc.getString("location"));
-        map.put("skills", doc.getList("skills", String.class));
-        map.put("availableHours", doc.getList("availableHours", Integer.class));
-        map.put("badges", doc.getList("badges", String.class));
-        map.put("isAvailable", doc.getBoolean("isAvailable"));
-        return map;
+        return filteredWorkers;
     }
 }

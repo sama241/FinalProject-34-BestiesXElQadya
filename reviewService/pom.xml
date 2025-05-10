@@ -5,14 +5,12 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.5</version> <!-- Adjust if needed -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-
 	<groupId>com.example</groupId>
 	<artifactId>reviewService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -20,13 +18,12 @@
 	<description>Review Microservice</description>
 
 	<properties>
-		<java.version>17</java.version> <!-- Recommended: Java 17 or 21 -->
+
+		<java.version>23</java.version> <!-- Recommended: Java 17 or 21 -->
 		<spring-cloud.version>2023.0.1</spring-cloud.version> <!-- Spring Cloud version matching Spring Boot 3.2.x -->
+
 	</properties>
-
 	<dependencies>
-
-		<!-- Web (for REST API) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -43,36 +40,50 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
-
-		<!-- RabbitMQ (optional, if you are sending messages) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
-
-		<!-- OpenFeign (optional, if you are calling other microservices) -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-parameter-names</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
 
-		<!-- Lombok (optional, to avoid writing getters/setters manually) -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
-		<!-- Testing (for unit tests) -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
-	<!-- Handle Spring Cloud versions -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
