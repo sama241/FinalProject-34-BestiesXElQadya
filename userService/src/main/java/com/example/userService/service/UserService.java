@@ -67,16 +67,84 @@ public class UserService {
 
     // Update User details
     // say if we update haga haga mesh kolo?
-    public User updateUser(UUID userId, User userDetails) {
+// Update User details (partial update: only non-null fields are updated)
+    public User updateUsername(UUID userId, String username) {
         User user = getUserById(userId);
-        user.setUsername(userDetails.getUsername());
-        user.setName(userDetails.getName());
-        user.setPassword(userDetails.getPassword());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
-        user.setAddress(userDetails.getAddress());
+        user.setUsername(username);
         return userRepository.save(user);
     }
+
+    public User updateName(UUID userId, String name) {
+        User user = getUserById(userId);
+        user.setName(name);
+        return userRepository.save(user);
+    }
+
+    public User updatePassword(UUID userId, String password) {
+        User user = getUserById(userId);
+        user.setPassword(password);
+        return userRepository.save(user);
+    }
+
+    public User updateEmail(UUID userId, String email) {
+        User user = getUserById(userId);
+        user.setEmail(email);
+        return userRepository.save(user);
+    }
+
+    public User updatePhone(UUID userId, String phone) {
+        User user = getUserById(userId);
+        user.setPhone(phone);
+        return userRepository.save(user);
+    }
+
+    public User updateAddress(UUID userId, String address) {
+        User user = getUserById(userId);
+        user.setAddress(address);
+        return userRepository.save(user);
+    }
+
+    // Update a user (re-save it)
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+//    public User updateUser(UUID id, User updatedUser) {
+//        Optional<User> optionalUser = userRepository.findById(id);
+//
+//        if (optionalUser.isPresent()) {
+//            User existingUser = optionalUser.get();
+//
+//            if (updatedUser.getUsername() != null) {
+//                existingUser.setUsername(updatedUser.getUsername());
+//            }
+//
+//            if (updatedUser.getName() != null) {
+//                existingUser.setName(updatedUser.getName());
+//            }
+//
+//            if (updatedUser.getPassword() != null) {
+//                existingUser.setPassword(updatedUser.getPassword());
+//            }
+//
+//            if (updatedUser.getEmail() != null) {
+//                existingUser.setEmail(updatedUser.getEmail());
+//            }
+//
+//            if (updatedUser.getPhone() != null) {
+//                existingUser.setPhone(updatedUser.getPhone());
+//            }
+//
+//            if (updatedUser.getAddress() != null) {
+//                existingUser.setAddress(updatedUser.getAddress());
+//            }
+//
+//            return userRepository.save(existingUser);
+//        } else {
+//            throw new RuntimeException("User with ID " + id + " not found");
+//        }
+//    }
+
 
     // Delete User by ID
     public void deleteUser(UUID userId) {
@@ -115,11 +183,4 @@ public class UserService {
         }
 
         favoriteRepository.deleteByUserIdAndWorkerId(userId, workerId);
-        return "Worker removed from favorites.";
-    }
-
-    // Get the list of favorite workers for a user
-    public List<Favorite> getFavoriteWorkers(UUID userId) {
-        return favoriteRepository.findByUserId(userId);
-    }
-}
+        return "Worker removed from fav
