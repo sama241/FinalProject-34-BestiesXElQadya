@@ -199,4 +199,39 @@ public class UserController {
 
     // Favorite Worker Functions
 
-    @Post
+    @PostMapping("/favorites")
+    public ResponseEntity<String> addFavoriteWorker(@RequestBody Favorite favorite) {
+        Favorite result = userService.addFavoriteWorker(favorite);
+
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Favorite worker already exists.");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
+    }
+
+
+    // Remove Worker from Favorites
+    @DeleteMapping("/favorites")
+    public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
+        UUID workerId = favorite.getWorkerId();
+        UUID userId = favorite.getUserId();
+        System.out.println("the user is " + userId);
+        System.out.println("the worker is " + workerId);
+
+        String result = userService.removeFavoriteWorker(userId, workerId);
+
+        if (result.equals("Favorite worker not found.")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
+    // Get Favorite Workers
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<Favorite>> getFavoriteWorkers(@PathVariable UUID userId) {
+        List<Favorite> favorites = userService.getFavoriteWorkers(userId);
+        return ResponseEntity.ok(favorites);
+    }
+}

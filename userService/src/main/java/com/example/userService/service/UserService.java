@@ -183,4 +183,11 @@ public class UserService {
         }
 
         favoriteRepository.deleteByUserIdAndWorkerId(userId, workerId);
-        return "Worker removed from fav
+        return "Worker removed from favorites.";
+    }
+
+    // Get the list of favorite workers for a user
+    public List<Favorite> getFavoriteWorkers(UUID userId) {
+        return favoriteRepository.findByUserId(userId);
+    }
+}
