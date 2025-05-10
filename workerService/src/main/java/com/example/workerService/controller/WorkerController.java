@@ -7,10 +7,7 @@ import com.example.workerService.repository.WorkerRepository;
 import com.example.workerService.service.WorkerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-<<<<<<< HEAD
 import org.springframework.http.HttpStatus;
-=======
->>>>>>> origin/sara
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

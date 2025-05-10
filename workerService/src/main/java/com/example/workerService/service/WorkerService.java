@@ -72,7 +72,7 @@ public class WorkerService {
             throw new RuntimeException("Worker not found with id: " + workerId);
         }
     }
-<<<<<<< HEAD
+
 
     public Worker getWorkerById(String id) {
         // First check Redis
@@ -99,7 +99,7 @@ public class WorkerService {
     public void deleteCachedWorker(String id) {
         cacheService.deleteWorker(id);
     }
-=======
+
     public boolean addTimeSlots(String workerId, Integer timeSlot) {
         Optional<Worker> optional = workerRepository.findById(workerId);
         if (optional.isEmpty()) return false;
@@ -131,10 +131,5 @@ public class WorkerService {
 
 
 
-
-
-
-
->>>>>>> origin/sara
 
 }

@@ -25,14 +25,10 @@ public class Worker {
         this.skills = new ArrayList<>();
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
-<<<<<<< HEAD
         this.isAvailable = false;
         this.rating=0;
-        // ➔ Default to false when empty
-=======
         this.isAvailable = false;  // ➔ Default to false when empty
         this.location= "";
->>>>>>> origin/sara
 
     }
     public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours, String location) {
@@ -125,11 +121,7 @@ public class Worker {
         this.badges = badges;
     }
 
-<<<<<<< HEAD
-=======
-    // 🔥 Helper Methods
-    // Method to book an available hour
->>>>>>> origin/sara
+
     public boolean bookHour(int hour) {
         if (availableHours.contains(hour)) {
             availableHours.remove(Integer.valueOf(hour));
@@ -172,20 +164,19 @@ public class Worker {
         return false;
     }
 
-<<<<<<< HEAD
     public double getRating() {
         return rating;
     }
 
     public void setRating(double rating) {
         this.rating = rating;
-=======
+    }
     public String getLocation() {
         return location;
     }
 
     public void setLocation(String location) {
         this.location = location;
->>>>>>> origin/sara
+
     }
 }
