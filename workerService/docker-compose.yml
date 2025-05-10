@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  worker-service:
+    build: .
+    container_name: worker-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=8082
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongo:27017/workerdb?authSource=admin
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      - redis
+      - mongo
+    networks:
+
+      - app-network
+
+      - connection
+    restart: always
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+
+      - app-network
+      - connection
+
+
+  mongo:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+    networks:
+      - app-network
+
+
+networks:
+  connection:
+    external: true
+    name: connection
+
+

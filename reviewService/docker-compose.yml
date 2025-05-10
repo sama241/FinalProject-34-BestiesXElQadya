@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  review-service:
+    build: .
+    container_name: review-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=8084
+      - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongo-review-db:27017/reviewdb?authSource=admin
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      - mongo-review-db
+    networks:
+      - app-network
+    restart: always
+
+  mongo-review-db:
+    image: mongo
+    container_name: mongo-review-db
+    ports:
+      - "27018:27017"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
