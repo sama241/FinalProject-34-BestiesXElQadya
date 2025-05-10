@@ -63,11 +63,20 @@ public class WorkerController {
     }
 
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
+
+        // 🛡️ Check if the user is logged in
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+        if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
+            throw new RuntimeException("Unauthorized: You can only update your own profile.");
+        }
+
+        // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(id);
         if (optional.isPresent()) {
             Worker existing = optional.get();
 
+            // ✅ Update only the provided fields
             if (updatedWorker.getName() != null) {
                 existing.setName(updatedWorker.getName());
             }
@@ -96,6 +105,7 @@ public class WorkerController {
                 existing.setBadges(updatedWorker.getBadges());
             }
 
+            // 💾 Save the updated worker
             Worker saved = workerRepository.save(existing);
 
             // 🔁 Refresh cache with updated worker
@@ -104,8 +114,9 @@ public class WorkerController {
             return saved;
         }
 
-        return null;
+        throw new RuntimeException("Worker not found.");
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteWorker(@PathVariable String id, HttpSession session) {

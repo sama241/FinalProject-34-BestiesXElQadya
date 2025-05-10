@@ -19,13 +19,15 @@ public class Worker {
     private List<Integer> availableHours;  // Available working hours (e.g., [9, 10, 11, 14])
 
     private List<String> badges;            // For badges/certifications
-
+    private double rating;
     // Constructors
     public Worker() {
         this.skills = new ArrayList<>();
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
-        this.isAvailable = false;  // ➔ Default to false when empty
+        this.isAvailable = false;
+        this.rating=0;
+        // ➔ Default to false when empty
 
     }
 
@@ -133,6 +135,11 @@ public class Worker {
     }
 
 
+    public double getRating() {
+        return rating;
+    }
 
-
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
 }
