@@ -68,15 +68,38 @@ public class UserService {
     // Update User details
     // say if we update haga haga mesh kolo?
     public User updateUser(UUID userId, User userDetails) {
+        // Fetch the existing user
         User user = getUserById(userId);
-        user.setUsername(userDetails.getUsername());
-        user.setName(userDetails.getName());
-        user.setPassword(userDetails.getPassword());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
-        user.setAddress(userDetails.getAddress());
+
+        // Check and update each field only if the new value is not null
+        if (userDetails.getUsername() != null) {
+            user.setUsername(userDetails.getUsername());
+        }
+
+        if (userDetails.getName() != null) {
+            user.setName(userDetails.getName());
+        }
+
+        if (userDetails.getPassword() != null) {
+            user.setPassword(userDetails.getPassword());
+        }
+
+        if (userDetails.getEmail() != null) {
+            user.setEmail(userDetails.getEmail());
+        }
+
+        if (userDetails.getPhone() != null) {
+            user.setPhone(userDetails.getPhone());
+        }
+
+        if (userDetails.getAddress() != null) {
+            user.setAddress(userDetails.getAddress());
+        }
+
+        // Save the updated user to the repository and return
         return userRepository.save(user);
     }
+
 
     // Delete User by ID
     public void deleteUser(UUID userId) {

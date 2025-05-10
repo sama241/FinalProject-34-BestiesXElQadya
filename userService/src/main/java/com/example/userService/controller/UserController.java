@@ -1,5 +1,6 @@
 package com.example.userService.controller;
 
+import com.example.userService.client.WorkerClient;
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.client.BookingClient;
@@ -9,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 @RestController
@@ -24,6 +22,9 @@ public class UserController {
 
     @Autowired
     private BookingClient bookingClient;
+
+    @Autowired
+    private WorkerClient workerClient;
 
     // get all
     @GetMapping
@@ -84,6 +85,7 @@ public class UserController {
     // Update User details
     @PutMapping("/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable UUID userId, @RequestBody User user) {
+
         User updatedUser = userService.updateUser(userId, user);
         return ResponseEntity.ok(updatedUser);
     }
@@ -129,9 +131,19 @@ public class UserController {
 
     // Get Favorite Workers
     @GetMapping("/{userId}/favorites")
-    public ResponseEntity<List<Favorite>> getFavoriteWorkers(@PathVariable UUID userId) {
+    public ResponseEntity< List<Map<String, Object>>> getFavoriteWorkers(@PathVariable UUID userId) {
         List<Favorite> favorites = userService.getFavoriteWorkers(userId);
-        return ResponseEntity.ok(favorites);
+
+        List<Map<String, Object>> favoriteWorkersInfo = new ArrayList<>();
+
+        // map the worker ids to the info of worker, using the worker client accordingly
+        for (Favorite favorite : favorites) {
+            // Assuming each Favorite has a workerId, you can call WorkerClient to get worker info
+            Map<String, Object> worker = workerClient.getWorkerById(favorite.getWorkerId().toString());
+
+            favoriteWorkersInfo.add(worker);
+        }
+        return ResponseEntity.ok(favoriteWorkersInfo);
     }
 
 
