@@ -15,12 +15,10 @@ public class ReviewProducer {
 
 
     public void sendReviewToWorker(String workerId, double averageRating) {
-        // Create a simple message payload as a Map
         Map<String, Object> message = new HashMap<>();
         message.put("workerId", workerId);
         message.put("averageRating", averageRating);
 
-        // Send the message as JSON
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, message);
         System.out.println("✅ Sent average rating to WorkerService: " + workerId + " = " + averageRating);
     }

@@ -20,7 +20,11 @@ services:
       - redis
       - mongo
     networks:
+<<<<<<< HEAD
       - app-network
+=======
+      - connection
+>>>>>>> origin/sara
     restart: always
 
   redis:
@@ -30,7 +34,11 @@ services:
       - "6379:6379"
     restart: always
     networks:
+<<<<<<< HEAD
       - app-network
+=======
+      - connection
+>>>>>>> origin/sara
 
   mongo:
     image: mongo
@@ -42,8 +50,17 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     networks:
+<<<<<<< HEAD
       - app-network
 
 networks:
   app-network:
     external: true
+=======
+      - connection
+
+networks:
+  connection:
+    external: true
+    name: connection
+>>>>>>> origin/sara

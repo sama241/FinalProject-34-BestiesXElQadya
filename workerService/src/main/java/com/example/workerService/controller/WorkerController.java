@@ -7,11 +7,15 @@ import com.example.workerService.repository.WorkerRepository;
 import com.example.workerService.service.WorkerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+<<<<<<< HEAD
 import org.springframework.http.HttpStatus;
+=======
+>>>>>>> origin/sara
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -188,5 +192,28 @@ public class WorkerController {
         }
         return ResponseEntity.ok(worker);
     }
+
+    @PutMapping("/{workerId}/add-timeslot")
+    public ResponseEntity<String> addTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.addTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour added successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour already exists or worker not found.");
+        }
+    }
+
+    // ➖ Remove time slot (hour) from worker
+    @PutMapping("/{workerId}/remove-timeslot")
+    public ResponseEntity<String> removeTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.removeTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour removed successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour not found or worker not found.");
+        }
+    }
+
+
 
 }

@@ -32,10 +32,8 @@ public class ReviewService {
 
         Review savedReview = reviewRepository.save(review);
 
-        // 👉 Calculate new average
         double newAverage = calculateAverageRating(workerId);
 
-        // 👉 Send it to WorkerService
         reviewProducer.sendReviewToWorker(workerId, newAverage);
 
         return savedReview;
