@@ -10,6 +10,7 @@ public class Worker {
 
     @Id
     private String id;
+
     private String name;
     private String email;
     private String password;
@@ -107,6 +108,8 @@ public class Worker {
         this.badges = badges;
     }
 
+    // 🔥 Helper Methods
+    // Method to book an available hour
     public boolean bookHour(int hour) {
         if (availableHours.contains(hour)) {
             availableHours.remove(Integer.valueOf(hour));
@@ -131,7 +134,23 @@ public class Worker {
             this.badges.add(badge);
         }
     }
+    public boolean addAvailableHour(int hour) {
+        if (!availableHours.contains(hour)) {
+            availableHours.add(hour);
+            this.isAvailable = true;
+            return true;
+        }
+        return false;
+    }
 
+    public boolean removeAvailableHour(int hour) {
+        if (availableHours.contains(hour)) {
+            availableHours.remove(Integer.valueOf(hour));
+            this.isAvailable = !availableHours.isEmpty();
+            return true;
+        }
+        return false;
+    }
 
 
 

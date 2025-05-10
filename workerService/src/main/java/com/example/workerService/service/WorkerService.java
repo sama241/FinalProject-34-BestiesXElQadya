@@ -4,10 +4,12 @@ import com.example.workerService.decorator.BasicWorkerProfile;
 import com.example.workerService.decorator.EmergencyBadge;
 import com.example.workerService.decorator.VerifiedBadge;
 import com.example.workerService.decorator.WorkerProfile;
+import com.example.workerService.factory.WorkerFactory;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +68,7 @@ public class WorkerService {
 
             workerRepository.save(worker);  // Save worker to MongoDB with updated badges
 
-
+            // 🚨🚨 RETURN the decorated profile details
             return profile.getProfileDetails();
         } else {
             throw new RuntimeException("Worker not found with id: " + workerId);
@@ -98,5 +100,43 @@ public class WorkerService {
     public void deleteCachedWorker(String id) {
         cacheService.deleteWorker(id);
     }
+
+}
+    }
+    public boolean addTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean added = worker.addAvailableHour(timeSlot);
+
+        if (added) {
+            workerRepository.save(worker);
+        }
+
+        return added;
+    }
+
+    public boolean removeTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean removed = worker.removeAvailableHour(timeSlot);
+
+        if (removed) {
+            workerRepository.save(worker);
+        }
+
+        return removed;
+    }
+
+
+
+
+
+
+
+
 
 }

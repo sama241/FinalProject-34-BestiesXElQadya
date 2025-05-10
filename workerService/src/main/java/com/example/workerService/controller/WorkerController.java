@@ -4,14 +4,16 @@ import com.example.workerService.factory.WorkerFactoryDispatcher;
 import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
+
 import com.example.workerService.service.WorkerService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -48,11 +50,13 @@ public class WorkerController {
         return workerService.saveWorker(worker);
     }
 
+    // ✅ Get all Workers
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
+    // ✅ Get Worker by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
@@ -62,6 +66,7 @@ public class WorkerController {
         return ResponseEntity.ok(worker);
     }
 
+    // ✅ Update Worker
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
         Optional<Worker> optional = workerRepository.findById(id);
@@ -103,10 +108,11 @@ public class WorkerController {
 
             return saved;
         }
-
         return null;
     }
 
+
+    // ✅ Delete Worker
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteWorker(@PathVariable String id, HttpSession session) {
         String sessionWorkerId = (String) session.getAttribute("workerId");
@@ -125,6 +131,7 @@ public class WorkerController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found");
     }
+
 
     @PutMapping("/workinghours/{id}")
     public ResponseEntity<String> setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours, HttpSession session) {
@@ -177,5 +184,28 @@ public class WorkerController {
         }
         return ResponseEntity.ok(worker);
     }
+
+    @PutMapping("/{workerId}/add-timeslot")
+    public ResponseEntity<String> addTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.addTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour added successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour already exists or worker not found.");
+        }
+    }
+
+    // ➖ Remove time slot (hour) from worker
+    @PutMapping("/{workerId}/remove-timeslot")
+    public ResponseEntity<String> removeTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.removeTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour removed successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour not found or worker not found.");
+        }
+    }
+
+
 
 }
