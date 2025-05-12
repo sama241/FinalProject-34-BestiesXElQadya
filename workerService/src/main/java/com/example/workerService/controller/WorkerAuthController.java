@@ -6,9 +6,12 @@ import com.example.workerService.repository.WorkerRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/worker/auth")
@@ -20,30 +23,41 @@ public class WorkerAuthController {
     private StringRedisTemplate redisTemplate;
 
     @GetMapping("/login")
-    public String login(@RequestParam String email, @RequestParam String password, HttpSession session) {
+    public ResponseEntity<Map<String, String>> login(@RequestParam String email, @RequestParam String password, HttpSession session) {
         Worker worker = workerRepository.findByEmail(email);
 
         if (worker != null && worker.getPassword().equals(password)) {
+
             session.setAttribute("workerId", worker.getId());
-            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
-            return "Worker logged in successfully!";
+
+//            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("workerId", worker.getId());
+            response.put("message", "Worker logged in successfully!");
+
+            return ResponseEntity.ok(response);
         } else {
-            return "Invalid credentials!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials!"));
         }
     }
+
 
     @GetMapping("/logout")
-    public String logout(HttpSession session) {
+    public ResponseEntity<String> logout(HttpSession session) {
         String workerId = (String) session.getAttribute("workerId");
 
-        // Remove from active list
-        if (workerId != null) {
-            redisTemplate.opsForSet().remove("activeWorkers", workerId);
+        if (workerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No worker is logged in!");
         }
 
+//        redisTemplate.opsForSet().remove("activeWorkers", workerId);
+
         session.invalidate();
-        return "Worker logged out successfully!";
+
+        return ResponseEntity.ok("Worker " + workerId + " logged out successfully!");
     }
+
 
 
     @GetMapping("/me")
@@ -56,8 +70,14 @@ public class WorkerAuthController {
         }
     }
     @GetMapping("/active")
-    public Set<String> getActiveWorkers() {
-        return redisTemplate.opsForSet().members("activeWorkers");
+    public Set<String> getActiveWorkers(HttpSession session) {
+
+        Enumeration<String> attributeNames = session.getAttributeNames();
+        return Collections.list(attributeNames).stream()
+                .map(attr -> session.getAttribute(attr).toString())
+                .collect(Collectors.toSet());
     }
+
+
 
 }

@@ -12,9 +12,15 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongo:27017/workerdb?authSource=admin
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
       - redis
       - mongo
+    networks:
+      - connection
     restart: always
 
   redis:
@@ -22,6 +28,17 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    restart: always
+    networks:
+      - connection
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540"
+    networks:
+      - connection
     restart: always
 
   mongo:
@@ -33,8 +50,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - connection
 
 networks:
-  default:
+  connection:
     external: true
     name: connection

@@ -13,8 +13,7 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
-        return new LettuceConnectionFactory(config);
+        return new LettuceConnectionFactory("search-redis", 6379);
     }
 
     @Bean
@@ -25,5 +24,6 @@ public class RedisConfig {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
-
 }
+
+

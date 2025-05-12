@@ -73,23 +73,30 @@ public class BookingController {
     }
 
 
-    @PutMapping("/{id}/dispatch")
-    public ResponseEntity<?> executeCommand(@PathVariable Long id,
-                                            @RequestParam String command,
-                                            @RequestParam(required = false) String newTime) {
+    @PutMapping("/{id}/reschedule")
+    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id,
+                                               @RequestParam String newTime) {
         Booking booking = bookingService.findById(id);
 
-        if (command.equalsIgnoreCase("reschedule")) {
-            if (newTime == null) return ResponseEntity.badRequest().body("newTime is required");
-            LocalDateTime parsed = LocalDateTime.parse(newTime);
-            dispatcher.reschedule(command, booking, parsed);
-
-        } else {
-            dispatcher.cancel(command, booking);
-
+        if (newTime == null) {
+            return ResponseEntity.badRequest().body("newTime is required");
         }
+
+        LocalDateTime parsed = LocalDateTime.parse(newTime);
+        dispatcher.reschedule("reschedule", booking, parsed);
+
         bookingService.save(booking);
-        return ResponseEntity.ok("Command executed: " + command);
+        return ResponseEntity.ok("Booking rescheduled successfully");
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+        Booking booking = bookingService.findById(id);
+
+        dispatcher.cancel("cancel", booking);
+
+        bookingService.save(booking);
+        return ResponseEntity.ok("Booking cancelled successfully");
     }
 
 
@@ -103,6 +110,18 @@ public class BookingController {
     public void delete(@PathVariable Long id) {
         bookingRepository.deleteById(id);
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id) {
+        Booking booking = bookingService.findById(id);
+        BookingStatus status= BookingStatus.IN_PROGRESS;
+
+        booking.setStatus(status);
+        bookingService.save(booking);
+
+        return ResponseEntity.ok("Booking status updated to " + status);
+    }
+
 
 
 

@@ -20,7 +20,6 @@ public class BookingDispatcher {
         this.context = context;
     }
 
-    // ✅ Standard commands (cancel, arrival)
     public void cancel(String commandKey, Booking booking) {
         BookingCommand command = commandMap.get(commandKey.toLowerCase());
 
@@ -31,7 +30,6 @@ public class BookingDispatcher {
         command.execute(booking);
     }
 
-    // ✅ Extended support for reschedule
     public void reschedule(String commandKey, Booking booking, LocalDateTime newTime) {
         BookingCommand command;
 
