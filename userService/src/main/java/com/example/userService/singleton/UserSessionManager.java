@@ -28,19 +28,27 @@ public class UserSessionManager {
         return instance;
     }
 
-    public void addActiveUser(UUID userId) {
-        redisTemplate.opsForSet().add(ACTIVE_USERS_KEY, userId.toString());
+    public void addActiveUser(String sessionId) {
+        redisTemplate.opsForSet().add(ACTIVE_USERS_KEY, sessionId);
     }
 
-    public void removeActiveUser(UUID userId) {
-        redisTemplate.opsForSet().remove(ACTIVE_USERS_KEY, userId.toString());
+    public void removeActiveUser(String sessionId) {
+        redisTemplate.opsForSet().remove(ACTIVE_USERS_KEY, sessionId);
     }
 
-    public boolean isUserActive(UUID userId) {
-        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ACTIVE_USERS_KEY, userId.toString()));
+    public boolean isUserActive(String sessionId) {
+        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ACTIVE_USERS_KEY, sessionId));
     }
 
-    public Set<Object> getAllActiveUsers() {
+//    public void removeActiveUser(UUID userId) {
+//        redisTemplate.opsForSet().remove(ACTIVE_USERS_KEY, userId.toString());
+//    }
+//
+//    public boolean isUserActive(UUID userId) {
+//        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ACTIVE_USERS_KEY, userId.toString()));
+//    }
+
+    public  Set<Object> getAllActiveUsers() {
         return Collections.singleton(redisTemplate.opsForSet().members(ACTIVE_USERS_KEY));
     }
 }

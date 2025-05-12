@@ -15,16 +15,40 @@ public class LoginCommand implements Command {
         this.userId = userId;
         this.session = session;
         this.sessionManager = sessionManager;
+
     }
 
     @Override
+//    public String execute() {
+//        if (sessionManager.isUserActive(userId)) {
+//            return "User is already logged in!";
+//        }
+//        session.setAttribute("userId", userId);
+//        session.setAttribute("loginTime", System.currentTimeMillis());
+//
+//        System.out.println("Session Attributes:");
+//        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+//            System.out.println(name + " = " + session.getAttribute(name));
+//        });
+//
+//        session.setAttribute("userId", userId);
+//        sessionManager.addActiveUser(session.getId());
+//        return "User logged in successfully!";
+//    }
     public String execute() {
-        if (sessionManager.isUserActive(userId)) {
+        if (sessionManager.isUserActive(session.getId())) {
             return "User is already logged in!";
         }
+        session.setAttribute("userId", userId);
+        session.setAttribute("loginTime", System.currentTimeMillis());
+
+        System.out.println("Session Attributes:");
+        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+            System.out.println(name + " = " + session.getAttribute(name));
+        });
 
         session.setAttribute("userId", userId);
-        sessionManager.addActiveUser(userId);
-        return "User logged in successfully!"  + session;
+        sessionManager.addActiveUser(session.getId());
+        return "User logged in successfully!";
     }
 }
