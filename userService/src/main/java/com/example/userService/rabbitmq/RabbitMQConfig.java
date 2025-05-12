@@ -1,4 +1,4 @@
-package com.example.reviewService.rabbitmq;
+package com.example.userService.rabbitmq;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -14,14 +14,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String QUEUE = "review_to_worker_queue";
-    public static final String EXCHANGE = "review_exchange";
-    public static final String ROUTING_KEY = "review.worker";
-
-    // New Queue for User Deleted Events
-    public static final String USER_DELETED_QUEUE = "user_to_review_queue";
-    public static final String USER_DELETED_EXCHANGE = "user_exchange";
-    public static final String USER_DELETED_ROUTING_KEY = "user.review";
+    public static final String QUEUE = "user_to_review_queue";
+    public static final String EXCHANGE = "user_exchange";
+    public static final String ROUTING_KEY = "user.review";
 
     @Bean
     public Queue queue() {
@@ -50,19 +45,5 @@ public class RabbitMQConfig {
                 .bind(queue)
                 .to(exchange)
                 .with(ROUTING_KEY);
-    }
-    @Bean
-    public Queue userDeletedQueue() {
-        return new Queue(USER_DELETED_QUEUE, true);
-    }
-
-    @Bean
-    public TopicExchange userDeletedExchange() {
-        return new TopicExchange(USER_DELETED_EXCHANGE);
-    }
-
-    @Bean
-    public Binding userDeletedBinding(Queue userDeletedQueue, TopicExchange userDeletedExchange) {
-        return BindingBuilder.bind(userDeletedQueue).to(userDeletedExchange).with(USER_DELETED_ROUTING_KEY);
     }
 }

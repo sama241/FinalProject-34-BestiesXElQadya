@@ -4,6 +4,7 @@ import com.example.userService.client.WorkerClient;
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.client.BookingClient;
+import com.example.userService.rabbitmq.UserProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ public class UserController {
 
     @Autowired
     private WorkerClient workerClient;
+
+    private  final UserProducer userProducer;
+
+    public UserController(UserProducer userProducer) {
+        this.userProducer = userProducer;
+    }
 
     // get all
     @GetMapping
@@ -93,7 +100,9 @@ public class UserController {
     // Delete User by ID
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+
         userService.deleteUser(userId);
+        userProducer.sendDeleteToReview(userId+"");
         return ResponseEntity.ok().build();
     }
 
