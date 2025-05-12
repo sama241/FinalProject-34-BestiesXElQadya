@@ -28,7 +28,7 @@ public class UserSessionManager {
         return instance;
     }
 
-    public void addActiveUser(UUID userId) {
+    public void addActiveUser(String userId) {
         redisTemplate.opsForSet().add(ACTIVE_USERS_KEY, userId.toString());
     }
 
@@ -40,7 +40,7 @@ public class UserSessionManager {
         return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ACTIVE_USERS_KEY, userId.toString()));
     }
 
-    public Set<Object> getAllActiveUsers() {
+    public  Set<Object> getAllActiveUsers() {
         return Collections.singleton(redisTemplate.opsForSet().members(ACTIVE_USERS_KEY));
     }
 }
