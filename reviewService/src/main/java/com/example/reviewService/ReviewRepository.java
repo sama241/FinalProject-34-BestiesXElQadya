@@ -5,8 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 
-
-    public interface ReviewRepository extends MongoRepository<Review, String> {
+ public interface ReviewRepository extends MongoRepository<Review, String> {
 
         // Fetch all reviews for a specific worker
         List<Review> findByWorkerId(String workerId);
@@ -14,4 +13,8 @@ import java.util.List;
         // Fetch all reviews created by a specific user (optional)
         List<Review> findByUserId(String userId);
         List<Review> findByWorkerIdAndUserId(String workerId, String userId);
+
+        // 🗑️ Delete all reviews for a specific user (needed for user deletion)
+        void deleteByUserId(String userId);
+
     }

@@ -73,6 +73,7 @@ public class WorkerService {
         }
     }
 
+
     public Worker getWorkerById(String id) {
         // First check Redis
         Worker worker = cacheService.getCachedWorker(id);
@@ -98,5 +99,37 @@ public class WorkerService {
     public void deleteCachedWorker(String id) {
         cacheService.deleteWorker(id);
     }
+
+    public boolean addTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean added = worker.addAvailableHour(timeSlot);
+
+        if (added) {
+            workerRepository.save(worker);
+        }
+
+        return added;
+    }
+
+    public boolean removeTimeSlots(String workerId, Integer timeSlot) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) return false;
+
+        Worker worker = optional.get();
+        boolean removed = worker.removeAvailableHour(timeSlot);
+
+        if (removed) {
+            workerRepository.save(worker);
+        }
+
+        return removed;
+    }
+
+
+
+
 
 }

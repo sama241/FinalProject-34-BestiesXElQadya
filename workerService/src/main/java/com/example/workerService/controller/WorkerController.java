@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -63,11 +64,20 @@ public class WorkerController {
     }
 
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
+
+        // 🛡️ Check if the user is logged in
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+        if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
+            throw new RuntimeException("Unauthorized: You can only update your own profile.");
+        }
+
+        // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(id);
         if (optional.isPresent()) {
             Worker existing = optional.get();
 
+            // ✅ Update only the provided fields
             if (updatedWorker.getName() != null) {
                 existing.setName(updatedWorker.getName());
             }
@@ -96,6 +106,7 @@ public class WorkerController {
                 existing.setBadges(updatedWorker.getBadges());
             }
 
+            // 💾 Save the updated worker
             Worker saved = workerRepository.save(existing);
 
             // 🔁 Refresh cache with updated worker
@@ -104,8 +115,9 @@ public class WorkerController {
             return saved;
         }
 
-        return null;
+        throw new RuntimeException("Worker not found.");
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteWorker(@PathVariable String id, HttpSession session) {
@@ -177,5 +189,28 @@ public class WorkerController {
         }
         return ResponseEntity.ok(worker);
     }
+
+    @PutMapping("/{workerId}/add-timeslot")
+    public ResponseEntity<String> addTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.addTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour added successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour already exists or worker not found.");
+        }
+    }
+
+    // ➖ Remove time slot (hour) from worker
+    @PutMapping("/{workerId}/remove-timeslot")
+    public ResponseEntity<String> removeTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
+        boolean result = workerService.removeTimeSlots(workerId, hour);
+        if (result) {
+            return ResponseEntity.ok("Hour removed successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Hour not found or worker not found.");
+        }
+    }
+
+
 
 }

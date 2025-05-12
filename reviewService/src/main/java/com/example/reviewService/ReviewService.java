@@ -2,6 +2,7 @@ package com.example.reviewService;
 
 import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
+import com.example.reviewService.rabbitmq.ReviewProducer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,8 +14,11 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    public ReviewService(ReviewRepository reviewRepository) {
+    private final ReviewProducer reviewProducer;
+
+    public ReviewService(ReviewRepository reviewRepository, ReviewProducer reviewProducer) {
         this.reviewRepository = reviewRepository;
+        this.reviewProducer = reviewProducer;
     }
 
 
@@ -30,8 +34,13 @@ public class ReviewService {
                 .isAnonymous(isAnonymous)
                 .build();
 
-        // Save the review to MongoDB and return the saved review with the auto-generated ID
-        return reviewRepository.save(review);  // MongoDB will populate the `id` field automatically
+        Review savedReview = reviewRepository.save(review);
+
+        double newAverage = calculateAverageRating(workerId);
+
+        reviewProducer.sendReviewToWorker(workerId, newAverage);
+
+        return savedReview;
     }
 
     // Read a review by ID
