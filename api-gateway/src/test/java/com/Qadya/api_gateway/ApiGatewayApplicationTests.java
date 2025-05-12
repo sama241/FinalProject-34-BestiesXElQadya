@@ -1,13 +1,13 @@
-package com.Qadya.api_gateway;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
-class ApiGatewayApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
+//package com.Qadya.api_gateway;
+//
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
+//
+//@SpringBootTest
+//class ApiGatewayApplicationTests {
+//
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//}

@@ -1,37 +1,44 @@
 spring:
   main:
     web-application-type: reactive
+    allow-bean-definition-overriding: true
   application:
     name: api-gateway
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Set-Cookie
       routes:
         - id: userService
           uri: http://localhost:8081
           predicates:
-            - Path=/users/**
+            - Path=/api/user/auth/**,/users/**
+          filters:
+            - StripPrefix=1
+            - SaveSession  # Replaces SessionCookie
         - id: workerService
           uri: http://localhost:8082
           predicates:
-            - Path=/workers/**
-        - id: bookingService
-          uri: http://localhost:8083
-          predicates:
-            - Path=/bookings/**
-        - id: reviewService
-          uri: http://localhost:8084
-          predicates:
-            - Path=/reviews/**
-        - id: searchService
-          uri: http://localhost:8085
-          predicates:
-            - Path=/search/**
+            - Path=/api/worker/auth/**,/workers/**
+          filters:
+            - StripPrefix=1
+            - SaveSession
+  session:
+    store-type: redis
+    redis:
+      namespace: spring:session:gateway
+    timeout: 1800 # 30 minutes
+
 server:
   port: 8761
+  servlet:
+    session:
+      cookie:
+        name: GATEWAY_SESSION
+        http-only: true
+        secure: false # Set to true in production with HTTPS
+        same-site: lax
 
-eureka:
-  client:
-    register-with-eureka: false
-    fetch-registry: false
-
-
+spring.data.redis:
+  host: localhost
+  port: 6379
