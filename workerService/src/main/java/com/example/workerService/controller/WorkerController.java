@@ -1,5 +1,4 @@
 package com.example.workerService.controller;
-import com.example.workerService.factory.WorkerFactory;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 

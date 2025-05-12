@@ -44,6 +44,8 @@ public class UserAuthController {
         }
     }
 
+
+
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
@@ -51,10 +53,10 @@ public class UserAuthController {
         return logoutCommand.execute();
     }
 
-    @GetMapping("/active-sessions")
-    public Set<Object> getActiveSessions() {
-        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
-        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
-        return activeSessions;
-    }
+//    @GetMapping("/active-sessions")
+//    public Set<Object> getActiveSessions() {
+//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
+//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
+//        return activeSessions;
+//    }
 }

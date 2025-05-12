@@ -36,7 +36,7 @@ public class LoginCommand implements Command {
 //        return "User logged in successfully!";
 //    }
     public String execute() {
-        if (sessionManager.isUserActive(session.getId())) {
+        if (sessionManager.isUserActive(session.getId())  && userId.equals(session.getAttribute("userId"))) {
             return "User is already logged in!";
         }
         session.setAttribute("userId", userId);
@@ -45,10 +45,11 @@ public class LoginCommand implements Command {
         System.out.println("Session Attributes:");
         session.getAttributeNames().asIterator().forEachRemaining(name -> {
             System.out.println(name + " = " + session.getAttribute(name));
+            System.out.println(session.getId());
         });
 
         session.setAttribute("userId", userId);
-        sessionManager.addActiveUser(session.getId());
+        sessionManager.addActiveUser(userId,session.getId());
         return "User logged in successfully!";
     }
 }
