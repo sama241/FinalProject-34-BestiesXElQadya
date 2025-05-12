@@ -25,6 +25,6 @@ public class LoginCommand implements Command {
 
         session.setAttribute("userId", userId);
         sessionManager.addActiveUser(userId);
-        return "User logged in successfully!";
+        return "User logged in successfully!"  + session;
     }
 }
