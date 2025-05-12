@@ -20,7 +20,7 @@ public class LogoutCommand implements Command {
         Object userId = session.getAttribute("userId");
 
         if (userId != null) {
-            sessionManager.removeActiveUser(UUID.fromString(userId.toString()));
+            sessionManager.removeActiveUser(session.getId());
             session.invalidate();
             return "User logged out successfully!";
         } else {

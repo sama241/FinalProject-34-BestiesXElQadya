@@ -19,8 +19,24 @@ public class LoginCommand implements Command {
     }
 
     @Override
+//    public String execute() {
+//        if (sessionManager.isUserActive(userId)) {
+//            return "User is already logged in!";
+//        }
+//        session.setAttribute("userId", userId);
+//        session.setAttribute("loginTime", System.currentTimeMillis());
+//
+//        System.out.println("Session Attributes:");
+//        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+//            System.out.println(name + " = " + session.getAttribute(name));
+//        });
+//
+//        session.setAttribute("userId", userId);
+//        sessionManager.addActiveUser(session.getId());
+//        return "User logged in successfully!";
+//    }
     public String execute() {
-        if (sessionManager.isUserActive(userId)) {
+        if (sessionManager.isUserActive(session.getId())) {
             return "User is already logged in!";
         }
         session.setAttribute("userId", userId);
