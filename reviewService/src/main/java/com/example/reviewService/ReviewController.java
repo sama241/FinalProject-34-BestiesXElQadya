@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -18,8 +19,9 @@ public class ReviewController {
     }
 
     // Create a new review
-    @PostMapping
+
     @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
 
         // Create and save the review using the service
@@ -34,6 +36,7 @@ public class ReviewController {
         // Return the saved review, now including the generated `id`
         return new ResponseEntity<>(savedReview, HttpStatus.CREATED);
     }
+
     // Get a review by its ID
     @GetMapping("/{id}")
     public ResponseEntity<Review> getReviewById(@PathVariable String id) {
@@ -115,5 +118,43 @@ public class ReviewController {
     public ResponseEntity<Double> getAverageRating(@PathVariable String workerId) {
         double averageRating = reviewService.calculateAverageRating(workerId);  // Calculate the average rating
         return ResponseEntity.ok(averageRating);  // Return the average rating in the response
+    }
+
+    // ana worker w badwr bl user id maynf3sh yetl3ly el reviews el annoynoums el hwa 3amelha
+    @GetMapping("/findbyworker/{workerId}/findbyuser/{userId}")
+    public ResponseEntity<List<Review>> getReviewsByWorkerAndUser(
+            @PathVariable String workerId,
+            @PathVariable String userId) {
+        System.out.println("WorkerId: " + workerId + ", UserId: " + userId);
+        List<Review> reviews = reviewService.getReviewsByWorkerIdAndUserId(workerId, userId);
+
+        if (reviews.isEmpty()) {
+            // If no reviews are found, return a 404 (Not Found)
+            return ResponseEntity.notFound().build();
+        } else {
+            // Return the list of reviews along with a 200 OK response
+            return ResponseEntity.ok(reviews);
+        }
+    }
+//ana worker badwr ala kol el reviews el ma3mola 3alaya law review fehom annonymous maynf3sh ashof el userid bta3o
+    @GetMapping("getallreviews/worker/{workerId}")
+    public ResponseEntity<List<Review>> getReviewsByWorkerIdAndHideAnonymousUser(
+            @PathVariable String workerId) {
+
+        System.out.println("WorkerId: " + workerId);
+        List<Review> reviews = reviewService.getallReviewsByWorkerId(workerId);
+
+        // Hide userId for anonymous reviews
+        reviews.forEach(review -> {
+            if (review.getIsAnonymous()) {
+                review.setUserId(null); // Remove the userId for anonymous reviews
+            }
+        });
+
+        if (reviews.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(reviews); // Return reviews with userId hidden for anonymous reviews
+        }
     }
 }
