@@ -1,15 +1,13 @@
 package com.example.workerService.service;
-
+import com.example.workerService.cache.WorkerCacheService;
 import com.example.workerService.decorator.BasicWorkerProfile;
 import com.example.workerService.decorator.EmergencyBadge;
 import com.example.workerService.decorator.VerifiedBadge;
 import com.example.workerService.decorator.WorkerProfile;
-import com.example.workerService.factory.WorkerFactory;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +16,20 @@ public class WorkerService {
 
     @Autowired
     private WorkerRepository workerRepository;
+    private final WorkerCacheService cacheService;
 
+    @Autowired
+    public WorkerService(WorkerCacheService cacheService) {
+        this.cacheService = cacheService;
+    }
+
+    public void cacheWorker(Worker worker) {
+        cacheService.cacheWorker(worker, 1); // TTL = 10 minutes
+    }
+
+    public Worker getCachedWorker(String id) {
+        return cacheService.getCachedWorker(id);
+    }
     public boolean setWorkingHours(String workerId, List<Integer> newWorkingHours) {
         Optional<Worker> workerOptional = workerRepository.findById(workerId);
 
@@ -55,12 +66,40 @@ public class WorkerService {
 
             workerRepository.save(worker);  // Save worker to MongoDB with updated badges
 
-            // 🚨🚨 RETURN the decorated profile details
+
             return profile.getProfileDetails();
         } else {
             throw new RuntimeException("Worker not found with id: " + workerId);
         }
     }
+
+
+    public Worker getWorkerById(String id) {
+        // First check Redis
+        Worker worker = cacheService.getCachedWorker(id);
+
+        if (worker != null) {
+            System.out.println(" Cache HIT");
+            return worker;
+        }
+
+        System.out.println(" Cache MISS → loading from MongoDB");
+
+        // Fallback to MongoDB
+        worker = workerRepository.findById(id).orElse(null);
+
+        if (worker != null) {
+            cacheService.cacheWorker(worker, 10); // cache for 10 minutes
+        }
+
+        return worker;
+    }
+
+
+    public void deleteCachedWorker(String id) {
+        cacheService.deleteWorker(id);
+    }
+
     public boolean addTimeSlots(String workerId, Integer timeSlot) {
         Optional<Worker> optional = workerRepository.findById(workerId);
         if (optional.isEmpty()) return false;
@@ -88,10 +127,6 @@ public class WorkerService {
 
         return removed;
     }
-
-
-
-
 
 
 

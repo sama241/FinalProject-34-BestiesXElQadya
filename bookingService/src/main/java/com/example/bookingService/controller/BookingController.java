@@ -20,11 +20,13 @@ public class BookingController {
     @Autowired
     private BookingRepository bookingRepository;
 
+
     @GetMapping
     public List<Booking> getAll() {
         return bookingService.findAll();
 
     }
+
 
     @GetMapping("/{id}")
     public Booking getById(@PathVariable Long id) {
@@ -119,6 +121,7 @@ public class BookingController {
 
         return ResponseEntity.ok("Booking status updated to " + status);
     }
+
 
 
 
