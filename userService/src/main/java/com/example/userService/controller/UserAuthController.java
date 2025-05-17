@@ -48,4 +48,15 @@ public class UserAuthController {
         Command logoutCommand = new LogoutCommand(session, sessionManager);
         return logoutCommand.execute();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<String> validateSession(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+        if (userId != null) {
+            return ResponseEntity.ok("Session is valid for userId: " + userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
+        }
+    }
+
 }
