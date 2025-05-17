@@ -1,5 +1,6 @@
 package com.example.userService.controller;
 
+import com.example.userService.client.ReviewClient;
 import com.example.userService.client.WorkerClient;
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
@@ -26,6 +27,8 @@ public class UserController {
 
     @Autowired
     private WorkerClient workerClient;
+    @Autowired
+    private ReviewClient reviewClient;
 
     private  final UserProducer userProducer;
 
@@ -109,8 +112,32 @@ public class UserController {
 
     // Favorite Worker Functions
 
-    @PostMapping("/favorites")
-    public ResponseEntity<String> addFavoriteWorker(@RequestBody Favorite favorite) {
+//    @PostMapping("/{userId}/favorites")
+//    public ResponseEntity<String> addFavoriteWorker(@RequestBody Favorite favorite) {
+//        System.out.println("favourite" + favorite);
+//        Favorite result = userService.addFavoriteWorker(favorite);
+//
+//        if (result == null) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("Favorite worker already exists.");
+//        }
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
+//    }
+
+
+    @PostMapping("/{userId}/favorites")
+    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body) {
+        String workerId = body.get("workerId");
+
+        if (workerId == null || workerId.isEmpty()) {
+            return ResponseEntity.badRequest().body("Missing workerId in request body.");
+        }
+
+        // Create new Favorite using userId from path and workerId from body
+        Favorite favorite = new Favorite();
+        favorite.setUserId(userId);
+        favorite.setWorkerId(workerId);
+
         Favorite result = userService.addFavoriteWorker(favorite);
 
         if (result == null) {
@@ -121,10 +148,11 @@ public class UserController {
     }
 
 
+
     // Remove Worker from Favorites
     @DeleteMapping("/favorites")
     public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
-        UUID workerId = favorite.getWorkerId();
+        String workerId = favorite.getWorkerId();
         UUID userId = favorite.getUserId();
         System.out.println("the user is " + userId);
         System.out.println("the worker is " + workerId);
@@ -139,6 +167,7 @@ public class UserController {
     }
 
     // Get Favorite Workers
+    //the error is hereeeeeeeee
     @GetMapping("/{userId}/favorites")
     public ResponseEntity< List<Map<String, Object>>> getFavoriteWorkers(@PathVariable UUID userId) {
         List<Favorite> favorites = userService.getFavoriteWorkers(userId);
@@ -161,6 +190,16 @@ public class UserController {
         List<Map<String, Object>>  bookings = bookingClient.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
+
+    @GetMapping("/{userId}/reviews")
+    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@PathVariable String userId) {
+        List<Map<String, Object>>  bookings = reviewClient.getReviewsByUserId(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+
+
+
 
 
 
