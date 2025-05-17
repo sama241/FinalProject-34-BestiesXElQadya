@@ -9,7 +9,7 @@ import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -58,9 +58,13 @@ public class BookingController {
 
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Booking booking) {
-        int hour = booking.getTimeslot().getHour();
+    public ResponseEntity<?> create(@RequestBody Booking booking, HttpSession session) {
+        String userId = (String) session.getAttribute("userId");  // Get userId from session
+        if (userId == null) {
+            return ResponseEntity.status(401).body("User not logged in");
+        }
 
+        int hour = booking.getTimeslot().getHour();
         // Try to "book" by removing a time slot
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
@@ -68,6 +72,7 @@ public class BookingController {
             return ResponseEntity.badRequest().body("Selected hour is not available.");
         }
 
+        booking.setUserId(userId);  // Set the userId from session
         booking.setStatus(BookingStatus.CONFIRMED);
         return ResponseEntity.ok(bookingService.save(booking));
     }
