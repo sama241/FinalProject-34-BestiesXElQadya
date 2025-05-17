@@ -4,6 +4,7 @@ import com.example.bookingService.client.WorkerClient;
 import com.example.bookingService.command.BookingDispatcher;
 import com.example.bookingService.model.Booking;
 import com.example.bookingService.model.BookingStatus;
+import com.example.bookingService.rabbitmq.BookingProducer;
 import com.example.bookingService.repository.BookingRepository;
 import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class BookingController {
 
     @Autowired
     private BookingRepository bookingRepository;
+    @Autowired
+    private BookingProducer bookingProducer;
 
 
     @GetMapping
@@ -55,22 +58,32 @@ public class BookingController {
     @Autowired
     private BookingDispatcher dispatcher;
 
-
-
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Booking booking) {
         int hour = booking.getTimeslot().getHour();
 
-        // Try to "book" by removing a time slot
-        String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
-
-        if (!result.toLowerCase().contains("success")) {
-            return ResponseEntity.badRequest().body("Selected hour is not available.");
-        }
+        // ✅ Use MQ instead of REST
+        bookingProducer.sendBookingStatusToWorker(booking.getWorkerId(), String.valueOf(hour), "confirmed");
 
         booking.setStatus(BookingStatus.CONFIRMED);
         return ResponseEntity.ok(bookingService.save(booking));
     }
+
+
+//    @PostMapping
+//    public ResponseEntity<?> create(@RequestBody Booking booking) {
+//        int hour = booking.getTimeslot().getHour();
+//
+//        // Try to "book" by removing a time slot
+//        String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
+//
+//        if (!result.toLowerCase().contains("success")) {
+//            return ResponseEntity.badRequest().body("Selected hour is not available.");
+//        }
+//
+//        booking.setStatus(BookingStatus.CONFIRMED);
+//        return ResponseEntity.ok(bookingService.save(booking));
+//    }
 
 
     @PutMapping("/{id}/reschedule")

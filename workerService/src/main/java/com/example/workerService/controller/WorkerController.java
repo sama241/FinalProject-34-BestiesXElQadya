@@ -65,7 +65,6 @@ public class WorkerController {
 
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
-
         // 🛡️ Check if the user is logged in
         String sessionWorkerId = (String) session.getAttribute("workerId");
         if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {

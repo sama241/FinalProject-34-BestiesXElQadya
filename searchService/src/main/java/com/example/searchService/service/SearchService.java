@@ -22,6 +22,7 @@ public class SearchService {
         this.searchStrategyFactory = searchStrategyFactory;
     }
 
+
     public List<Map<String, Object>> searchWorkers(SearchRequest request) {
         // Fetch all workers from the worker service
         List<Map<String, Object>> workers = workerClient.getWorkers();
