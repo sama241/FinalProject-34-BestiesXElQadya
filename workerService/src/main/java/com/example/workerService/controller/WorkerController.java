@@ -1,5 +1,6 @@
 package com.example.workerService.controller;
 
+import com.example.workerService.client.BookingClient;
 import com.example.workerService.factory.WorkerFactoryDispatcher;
 import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
@@ -23,7 +24,8 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
-
+    @Autowired
+    private BookingClient bookingClient;
 
     // ✅ Create new Worker
 //    @PostMapping("/create")
@@ -211,6 +213,10 @@ public class WorkerController {
         }
     }
 
-
+    @GetMapping("/{workerId}/bookings")
+    public ResponseEntity<List<Map<String, Object>>> getWorkerBookings(@PathVariable String workerId) {
+        List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
+        return ResponseEntity.ok(bookings);
+    }
 
 }
