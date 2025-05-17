@@ -1,5 +1,6 @@
 package com.example.reviewService;
 
+import com.example.reviewService.Client.workerClient;
 import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
@@ -14,11 +15,11 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    private final ReviewProducer reviewProducer;
+    private final workerClient WorkerClient ;
 
-    public ReviewService(ReviewRepository reviewRepository, ReviewProducer reviewProducer) {
+    public ReviewService(ReviewRepository reviewRepository, workerClient WorkerClient) {
         this.reviewRepository = reviewRepository;
-        this.reviewProducer = reviewProducer;
+        this.WorkerClient = WorkerClient;
     }
 
 
@@ -37,9 +38,12 @@ public class ReviewService {
         Review savedReview = reviewRepository.save(review);
 
         double newAverage = calculateAverageRating(workerId);
+        System.out.println("Calling WorkerService to update average for: " + workerId);
+        // Use Feign to notify WorkerService to update the worker's average rating
 
-        reviewProducer.sendReviewToWorker(workerId, newAverage);
-
+        System.out.println("Calling WorkerService to update average: " + newAverage);
+        WorkerClient.updateAverageRating(workerId, newAverage);
+        System.out.println("Update call done");
         return savedReview;
     }
 
