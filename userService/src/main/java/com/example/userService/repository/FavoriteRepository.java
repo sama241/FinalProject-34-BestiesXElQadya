@@ -12,13 +12,13 @@ import java.util.UUID;
 public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
 
     @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END FROM favorites WHERE user_id = :userId AND worker_id = :workerId", nativeQuery = true)
-    boolean existsByUserIdAndWorkerId(UUID userId, UUID workerId);
+    boolean existsByUserIdAndWorkerId(UUID userId, String workerId);
 
     List<Favorite> findByUserId(UUID userId);
 
     @Modifying
     @Query(value="DELETE FROM favorites WHERE user_id=:userId and worker_id=:workerId", nativeQuery = true)
-    void deleteByUserIdAndWorkerId(UUID userId, UUID workerId);
+    void deleteByUserIdAndWorkerId(UUID userId, String workerId);
 
     // delete all favorite records bta3et user mo3ayan
 }

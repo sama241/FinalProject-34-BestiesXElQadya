@@ -4,8 +4,8 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -13,30 +13,30 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
+public class SessionValidationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        // Skip authentication for public endpoints
+        // Skip validation for public endpoints
         if (isPublicEndpoint(path)) {
             return chain.filter(exchange);
         }
 
-        HttpHeaders headers = exchange.getRequest().getHeaders();
-        if (!headers.containsKey(HttpHeaders.AUTHORIZATION)) {
-            return unauthorized(exchange, "Missing Authorization header");
-        }
+        return exchange.getSession()
+                .flatMap(session -> {
+                    if (session.isExpired()) {
+                        return unauthorized(exchange, "Session expired or invalid");
+                    }
 
-        String token = headers.getFirst(HttpHeaders.AUTHORIZATION);
-        if (token == null || !token.startsWith("Bearer ")) {
-            return unauthorized(exchange, "Invalid or missing Bearer token");
-        }
+                    // Add session info to downstream requests
+                    ServerHttpRequest request = exchange.getRequest().mutate()
+                            .header("X-Session-User", session.getId())
+                            .build();
 
-        // TODO: Add real JWT validation logic here if needed
-
-        return chain.filter(exchange);
+                    return chain.filter(exchange.mutate().request(request).build());
+                });
     }
 
     private boolean isPublicEndpoint(String path) {
@@ -55,6 +55,6 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return -1;
+        return Ordered.LOWEST_PRECEDENCE;
     }
 }

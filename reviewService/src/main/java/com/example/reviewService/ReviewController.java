@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+
+@RequestMapping("/reviews")
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: .
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_ID=userService
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://user-service:8081
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0=Path=/api/user/**,/users/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_ID=workerService
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://worker-service:8082
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0=Path=/api/worker/**,/workers/**
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_ID=bookingService
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_URI=http://booking-service:8083
+      - SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0=Path=/bookings/**
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_SESSION_STORE_TYPE=redis
+    depends_on:
+      - redis
+    networks:
+      - microservices-network
+
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
