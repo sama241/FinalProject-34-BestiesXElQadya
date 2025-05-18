@@ -61,14 +61,15 @@ public class WorkerAuthController {
 
 
     @GetMapping("/me")
-    public String currentWorker(HttpSession session) {
+    public ResponseEntity<String> validateSession(HttpSession session) {
         Object workerId = session.getAttribute("workerId");
         if (workerId != null) {
-            return "Logged in worker ID: " + workerId.toString();
+            return ResponseEntity.ok(workerId.toString());
         } else {
-            return "No worker is logged in!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
         }
     }
+
     @GetMapping("/active")
     public Set<String> getActiveWorkers(HttpSession session) {
 
@@ -77,7 +78,15 @@ public class WorkerAuthController {
                 .map(attr -> session.getAttribute(attr).toString())
                 .collect(Collectors.toSet());
     }
-
-
+    // ✅ New Method to Get Worker ID from Session
+    @GetMapping("/worker-id")
+    public ResponseEntity<String> getWorkerId(HttpSession session) {
+        String workerId = (String) session.getAttribute("workerId");
+        if (workerId != null) {
+            return ResponseEntity.ok(workerId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No worker is logged in!");
+        }
+    }
 
 }
