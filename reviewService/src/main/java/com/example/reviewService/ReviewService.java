@@ -49,7 +49,7 @@ public class ReviewService {
         // Use Feign to notify WorkerService to update the worker's average rating
 
         System.out.println("Calling WorkerService to update average: " + newAverage);
-        WorkerClient.updateAverageRating(workerId, newAverage);
+       // WorkerClient.updateAverageRating(workerId, newAverage);
         ReviewData reviewData = new ReviewData();
         reviewData.registerObserver(new WorkerObserver(reviewProducer, workerId));
         reviewData.setAverageRating((int) newAverage);
