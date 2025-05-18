@@ -19,15 +19,25 @@ public class Worker {
     private String location;
     private List<String> badges;            // For badges/certifications
     private double rating;
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    private double averageRating;
     // Constructors
     public Worker() {
         this.skills = new ArrayList<>();
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
         this.isAvailable = false;
-        this.rating=0;
         this.isAvailable = false;  // ➔ Default to false when empty
         this.location= "";
+        this.averageRating=0;
 
     }
     public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours, String location) {
@@ -39,7 +49,8 @@ public class Worker {
         this.skills = skills;
         this.availableHours = availableHours;
         this.badges = new ArrayList<>();
-        this.isAvailable = (availableHours != null && !availableHours.isEmpty()); // ➔ if availableHours not empty, available!
+        this.isAvailable = (availableHours != null && !availableHours.isEmpty());
+        this.averageRating=0;// ➔ if availableHours not empty, available!
     }
 
     public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours) {
@@ -50,7 +61,8 @@ public class Worker {
         this.skills = skills;
         this.availableHours = availableHours;
         this.badges = new ArrayList<>();
-        this.isAvailable = (availableHours != null && !availableHours.isEmpty()); // ➔ if availableHours not empty, available!
+        this.isAvailable = (availableHours != null && !availableHours.isEmpty());
+        this.averageRating=0;// ➔ if availableHours not empty, available!
     }
 
     // Getters and Setters
@@ -163,13 +175,6 @@ public class Worker {
         return false;
     }
 
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
     public String getLocation() {
         return location;
     }

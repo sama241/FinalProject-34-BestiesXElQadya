@@ -1,5 +1,4 @@
 package com.example.workerService.service;
-
 import com.example.workerService.cache.WorkerCacheService;
 import com.example.workerService.decorator.BasicWorkerProfile;
 import com.example.workerService.decorator.EmergencyBadge;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -108,7 +106,7 @@ public class WorkerService {
             logger.info("Worker {} cached after DB fetch", id);
         }
 
-        return worker; // can still return null if not found
+        return worker;
     }
 
 
@@ -160,7 +158,17 @@ public class WorkerService {
     }
 
 
+    public boolean updateAverageRating(String workerId, double newRating) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) {
+            return false;
+        }
 
+        Worker worker = optional.get();
+        worker.setAverageRating(newRating);
+        workerRepository.save(worker);
+        return true;
+    }
 
 
 }

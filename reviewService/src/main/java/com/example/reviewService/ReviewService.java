@@ -1,104 +1,131 @@
 package com.example.reviewService;
 
+import com.example.reviewService.Client.workerClient;
+import com.example.reviewService.Observer.ReviewData;
+import com.example.reviewService.Observer.WorkerObserver;
+import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
+
+    @Autowired
+    private ReviewProducer reviewProducer;
 
     private final ReviewRepository reviewRepository;
-    private final ReviewProducer reviewProducer;
 
-    public ReviewService(ReviewRepository reviewRepository, ReviewProducer reviewProducer) {
+    private final workerClient WorkerClient ;
+
+    public ReviewService(ReviewRepository reviewRepository, workerClient WorkerClient) {
         this.reviewRepository = reviewRepository;
-        this.reviewProducer = reviewProducer;
+        this.WorkerClient = WorkerClient;
     }
 
+
+    // Create a new review using the Builder pattern
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
         try {
-            Review review = new Review.Builder()
-                    .workerId(workerId)
-                    .userId(userId)
-                    .rating(rating)
-                    .comment(comment)
-                    .isAnonymous(isAnonymous)
-                    .build();
-
-            Review savedReview = reviewRepository.save(review);
-            logger.info("Review created by user {} for worker {}", userId, workerId);
-
-            double newAverage = calculateAverageRating(workerId);
-            reviewProducer.sendReviewToWorker(workerId, newAverage);
-            logger.info("Sent new average rating ({}) to worker {}", newAverage, workerId);
-
-            return savedReview;
+            ResponseEntity<?> response = WorkerClient.getWorker(workerId);
+            if (response.getStatusCode().is4xxClientError()) {
+                throw new RuntimeException("Worker with ID " + workerId + " does not exist.");
+            }
         } catch (Exception e) {
-            logger.error("Failed to create review for worker {} by user {}", workerId, userId, e);
-            throw e;
+            throw new RuntimeException("Error validating worker existence: " + e.getMessage());
         }
+
+        Rating validRating = Rating.fromValue(rating);
+        Review review = new Review.Builder()
+                .workerId(workerId)
+                .userId(userId)
+                .rating(validRating.getValue())
+                .comment(comment)
+                .isAnonymous(isAnonymous)
+                .build();
+
+        Review savedReview = reviewRepository.save(review);
+
+        double newAverage = calculateAverageRating(workerId);
+        System.out.println("Calling WorkerService to update average for: " + workerId);
+        // Use Feign to notify WorkerService to update the worker's average rating
+
+        System.out.println("Calling WorkerService to update average: " + newAverage);
+       // WorkerClient.updateAverageRating(workerId, newAverage);
+        ReviewData reviewData = new ReviewData();
+        reviewData.registerObserver(new WorkerObserver(reviewProducer, workerId));
+        reviewData.setAverageRating((int) newAverage);
+        System.out.println("Update call done");
+        return savedReview;
     }
 
+    // Read a review by ID
     public Optional<Review> getReviewById(String id) {
-        logger.info("Fetching review with ID {}", id);
         return reviewRepository.findById(id);
     }
 
+    // Get all reviews for a worker
     public List<Review> getReviewsByWorkerId(String workerId) {
-        logger.info("Fetching all reviews for worker {}", workerId);
         return reviewRepository.findByWorkerId(workerId);
     }
 
+    // Get all reviews by a user
     public List<Review> getReviewsByUserId(String userId) {
-        logger.info("Fetching all reviews by user {}", userId);
         return reviewRepository.findByUserId(userId);
     }
 
+    // Update a review (re-save it)
     public Review updateReview(Review review) {
-        logger.info("Updating review with ID {}", review.getId());
         return reviewRepository.save(review);
     }
 
+    // Delete a review by ID
     public void deleteReviewById(String id) {
-        logger.info("Deleting review with ID {}", id);
         reviewRepository.deleteById(id);
     }
 
     public double calculateAverageRating(String workerId) {
-        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);  // Fetch reviews by worker ID
         if (reviews.isEmpty()) {
-            logger.info("No reviews found for worker {}, returning average as 0", workerId);
-            return 0;
+            return 0;  // If there are no reviews for the worker, return 0
         }
-
+        // Calculate the average rating
         double totalRating = 0;
         for (Review review : reviews) {
             totalRating += review.getRating();
         }
-
-        double avg = totalRating / reviews.size();
-        logger.info("Calculated average rating ({}) for worker {}", avg, workerId);
-        return avg;
+        return totalRating / reviews.size();  // Return the average rating
     }
-
+    // Method to increment helpful votes
     public Review markReviewAsHelpful(String reviewId) {
-        logger.info("Marking review {} as helpful", reviewId);
-
         Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
         if (reviewOptional.isPresent()) {
             Review review = reviewOptional.get();
-            review.incrementHelpfulVotes();
-            logger.info("Helpful votes incremented for review {}", reviewId);
-            return reviewRepository.save(review);
+            review.incrementHelpfulVotes();  // Increment the helpful votes
+            return reviewRepository.save(review);  // Save the updated review
         } else {
-            logger.error("Review with ID {} not found", reviewId);
             throw new RuntimeException("Review not found");
         }
     }
+
+    // Fetch reviews by workerId and filter out anonymous reviews by userId
+    public List<Review> getReviewsByWorkerIdAndUserId(String workerId, String userId) {
+        return reviewRepository.findByWorkerIdAndUserIdAndIsAnonymous(workerId, userId, false);
+    }
+    public List<Review> getallReviewsByWorkerId(String workerId) {
+        // Fetch all reviews for the worker
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+
+        // Return the reviews to be processed by the controller
+        return reviews;
+    }
+
+
 }

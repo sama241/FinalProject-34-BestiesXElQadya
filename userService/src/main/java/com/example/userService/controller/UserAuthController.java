@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
-
 @RestController
 @RequestMapping("/api/user/auth")
 public class UserAuthController {
@@ -31,11 +29,11 @@ public class UserAuthController {
 //        this.redisTemplate = redisTemplate;
 //        this.userService = userService;
 //    }
-    @PostMapping("/login")
-    public String login(@RequestBody  User loginRequest , HttpSession session) {
-        User user = userService.getByEmail(loginRequest.getEmail());
+    @GetMapping("/login")
+    public String login(@RequestParam String email, @RequestParam String password, HttpSession session) {
+        User user = userService.getByEmail(email);
 
-        if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
+        if (user != null && user.getPassword().equals(password)) {
             UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
             Command loginCommand = new LoginCommand(user.getId(), session, sessionManager);
             return loginCommand.execute();
@@ -44,8 +42,6 @@ public class UserAuthController {
         }
     }
 
-
-
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
@@ -53,10 +49,14 @@ public class UserAuthController {
         return logoutCommand.execute();
     }
 
-//    @GetMapping("/active-sessions")
-//    public Set<Object> getActiveSessions() {
-//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
-//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
-//        return activeSessions;
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<String> validateSession(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+        if (userId != null) {
+            return ResponseEntity.ok("Session is valid for userId: " + userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
+        }
+    }
+
 }

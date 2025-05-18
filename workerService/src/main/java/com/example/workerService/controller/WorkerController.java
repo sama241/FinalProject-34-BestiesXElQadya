@@ -60,16 +60,15 @@ public class WorkerController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
-
         if (worker == null) {
-            return ResponseEntity.status(404).body("Worker with ID '" + id + "' not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
         }
-
         return ResponseEntity.ok(worker);
     }
 
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
+
         // 🛡️ Check if the user is logged in
         String sessionWorkerId = (String) session.getAttribute("workerId");
         if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
@@ -215,8 +214,6 @@ public class WorkerController {
         }
     }
 
-
-
     @GetMapping("/{workerId}/bookings")
     public ResponseEntity<?> getWorkerBookings(@PathVariable String workerId) {
         try {
@@ -235,5 +232,17 @@ public class WorkerController {
                     .body(Map.of("error", "Unexpected error occurred."));
         }
     }
+
+    @PutMapping("/{workerId}/average-rating")
+    public ResponseEntity<?> updateAverageRating(@PathVariable String workerId, @RequestBody double newAverageRating) {
+        return workerRepository.findById(workerId)
+                .map(worker -> {
+                    worker.setAverageRating(newAverageRating);
+                    workerRepository.save(worker);  // ⚠️ MUST save after update!
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found"));
+    }
+
 
 }
