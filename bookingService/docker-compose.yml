@@ -7,8 +7,8 @@ services:
     restart: always
     environment:
       POSTGRES_DB: booking_db
-      POSTGRES_USER: booking_user
-      POSTGRES_PASSWORD: booking_pass
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
@@ -24,8 +24,8 @@ services:
       - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://booking-db:5432/booking_db
-      SPRING_DATASOURCE_USERNAME: booking_user
-      SPRING_DATASOURCE_PASSWORD: booking_pass
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
 
 
 volumes:
