@@ -67,30 +67,27 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Booking booking, HttpSession session) {
-        session.getAttributeNames().asIterator().forEachRemaining(name -> {
-            System.out.println("the session is here");
-            System.out.println(name + " = " + session.getAttribute(name));
-            System.out.println(session.getId());
-        });
+        // Extract only the user ID from the session
+        String userId = (String) session.getAttribute("userId");
+        System.out.println("User ID from session: " + userId);
 
 
-        String userId = userClient.getUserBySession(session) ; // Get userId from session
         if (userId == null) {
             return ResponseEntity.status(401).body("User not logged in");
         }
 
         int hour = booking.getTimeslot().getHour();
-        // Try to "book" by removing a time slot
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
         if (!result.toLowerCase().contains("success")) {
             return ResponseEntity.badRequest().body("Selected hour is not available.");
         }
 
-        booking.setUserId(userId);  // Set the userId from session
+        booking.setUserId(userId);
         booking.setStatus(BookingStatus.CONFIRMED);
         return ResponseEntity.ok(bookingService.save(booking));
     }
+
 
 
     @PutMapping("/{id}/reschedule")

@@ -1,11 +1,14 @@
 package com.example.reviewService;
 
+import com.example.reviewService.Client.workerClient;
+import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
@@ -88,4 +91,26 @@ public class ReviewService {
             throw new RuntimeException("Review not found");
         }
     }
+
+    // Fetch reviews by workerId and filter out anonymous reviews by userId
+    public List<Review> getReviewsByWorkerIdAndUserId(String workerId, String userId) {
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+        System.out.println("Retrieved reviews: " + reviews);  // Log the reviews retrieved
+
+        List<Review> filteredReviews = reviews.stream()
+                .filter(review -> !(review.getUserId().equals(userId) && review.getIsAnonymous()))
+                .collect(Collectors.toList());
+
+        System.out.println("Filtered reviews: " + filteredReviews);  // Log the filtered reviews
+        return filteredReviews;
+    }
+    public List<Review> getallReviewsByWorkerId(String workerId) {
+        // Fetch all reviews for the worker
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+
+        // Return the reviews to be processed by the controller
+        return reviews;
+    }
+
+
 }

@@ -35,7 +35,9 @@ public class UserAuthController {
     public String login(@RequestBody  User loginRequest , HttpSession session) {
         User user = userService.getByEmail(loginRequest.getEmail());
 
+
         if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
+            session.setAttribute("userId", user.getId());
             UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
             Command loginCommand = new LoginCommand(user.getId(), session, sessionManager);
             return loginCommand.execute();
