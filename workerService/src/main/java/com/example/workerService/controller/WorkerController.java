@@ -57,9 +57,11 @@ public class WorkerController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
+
         if (worker == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
+            return ResponseEntity.status(404).body("Worker with ID '" + id + "' not found.");
         }
+
         return ResponseEntity.ok(worker);
     }
 

@@ -22,15 +22,10 @@ public class BookingController {
     private BookingRepository bookingRepository;
     @Autowired
     private BookingProducer bookingProducer;
-
-
     @GetMapping
     public List<Booking> getAll() {
         return bookingService.findAll();
-
     }
-
-
     @GetMapping("/{id}")
     public Booking getById(@PathVariable Long id) {
         return bookingRepository.findById(id).orElseThrow();
@@ -41,13 +36,11 @@ public class BookingController {
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
-
     @GetMapping("/worker/{workerId}")
     public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
         List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
         return ResponseEntity.ok(bookings);
     }
-
 
     @Autowired
     private BookingService bookingService;
