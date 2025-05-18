@@ -36,7 +36,10 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
         } else if (path.startsWith("/users")) {
             authServiceUri = "http://user-service:8081/api/user/auth/me";
             headerName = "X-User-Id";
-        } else {
+        } else if(path.startsWith("/bookings/create")){
+            authServiceUri = "http://user-service:8081/api/user/auth/me";
+            headerName = "X-User-Id";
+        }else {
             return unauthorized(exchange);
         }
 
@@ -78,7 +81,8 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
                 || path.equals("/api/worker/auth/login")
                 || path.startsWith("/search")
                 || path.equals("/users")
-                || path.equals("/workers/create");
+                || path.equals("/workers/create")
+                || path.equals("/bookings");
     }
 
     @Override
