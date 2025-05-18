@@ -77,7 +77,15 @@ public class WorkerAuthController {
                 .map(attr -> session.getAttribute(attr).toString())
                 .collect(Collectors.toSet());
     }
-
-
+    // ✅ New Method to Get Worker ID from Session
+    @GetMapping("/worker-id")
+    public ResponseEntity<String> getWorkerId(HttpSession session) {
+        String workerId = (String) session.getAttribute("workerId");
+        if (workerId != null) {
+            return ResponseEntity.ok(workerId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No worker is logged in!");
+        }
+    }
 
 }
