@@ -10,6 +10,8 @@ import com.example.userService.singleton.UserSessionManager;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
@@ -48,4 +50,15 @@ public class UserAuthController {
         Command logoutCommand = new LogoutCommand(session, sessionManager);
         return logoutCommand.execute();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<String> validateSession(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+        if (userId != null) {
+            return ResponseEntity.ok("Session is valid for userId: " + userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
+        }
+    }
+
 }

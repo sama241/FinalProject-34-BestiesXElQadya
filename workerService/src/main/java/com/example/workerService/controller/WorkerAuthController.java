@@ -10,10 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/worker/auth")
@@ -29,20 +27,17 @@ public class WorkerAuthController {
         Worker worker = workerRepository.findByEmail(email);
 
         if (worker != null && worker.getPassword().equals(password)) {
-            // Store worker ID in session
+
             session.setAttribute("workerId", worker.getId());
 
-            // Add worker to the active set in Redis
-            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
+//            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
 
-            // Return worker ID and success message as JSON
             Map<String, String> response = new HashMap<>();
             response.put("workerId", worker.getId());
             response.put("message", "Worker logged in successfully!");
 
             return ResponseEntity.ok(response);
         } else {
-            // Return error message as JSON
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials!"));
         }
     }
@@ -56,13 +51,10 @@ public class WorkerAuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No worker is logged in!");
         }
 
-        // ✅ Remove from active list if present
-        redisTemplate.opsForSet().remove("activeWorkers", workerId);
+//        redisTemplate.opsForSet().remove("activeWorkers", workerId);
 
-        // 🛑 Invalidate the session
         session.invalidate();
 
-        // 👍 Successful logout
         return ResponseEntity.ok("Worker " + workerId + " logged out successfully!");
     }
 
@@ -78,8 +70,14 @@ public class WorkerAuthController {
         }
     }
     @GetMapping("/active")
-    public Set<String> getActiveWorkers() {
-        return redisTemplate.opsForSet().members("activeWorkers");
+    public Set<String> getActiveWorkers(HttpSession session) {
+
+        Enumeration<String> attributeNames = session.getAttributeNames();
+        return Collections.list(attributeNames).stream()
+                .map(attr -> session.getAttribute(attr).toString())
+                .collect(Collectors.toSet());
     }
+
+
 
 }

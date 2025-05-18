@@ -17,20 +17,10 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
-      - redis
       - mongo
     networks:
       - connection
     restart: always
-
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6379:6379"
-    restart: always
-    networks:
-      - connection
 
   mongo:
     image: mongo

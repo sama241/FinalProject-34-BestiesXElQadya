@@ -1,77 +1,76 @@
 package com.Qadya.api_gateway.filters;
 
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
 
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getURI().getPath();
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
-        // Skip authentication for public endpoints
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
+        String path = exchange.getRequest().getPath().value();
+
+        // Allow public endpoints without auth
         if (isPublicEndpoint(path)) {
             return chain.filter(exchange);
         }
 
-        HttpHeaders headers = exchange.getRequest().getHeaders();
+        // Extract SESSION cookie
+        List<String> cookies = exchange.getRequest().getCookies().getFirst("SESSION") != null ?
+                List.of(exchange.getRequest().getCookies().getFirst("SESSION").getValue()) : null;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        if (!headers.containsKey(HttpHeaders.AUTHORIZATION)) {
-            return unauthorized(exchange, "Missing Authorization header");
+        if (cookies == null || cookies.isEmpty()) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
-        String token = headers.getFirst(HttpHeaders.AUTHORIZATION);
-        if (token == null || !token.startsWith("Bearer ")) {
-            return unauthorized(exchange, "Invalid or missing Bearer token");
-        }
+        String sessionId = cookies.get(0);
 
-        // TODO: Add real JWT validation logic here if needed
+        // Decide whether it's user or worker path
+        boolean isWorkerPath = path.startsWith("/workers") || path.startsWith("/api/worker/");
+        String validationUri = isWorkerPath
+                ? "http://worker-service:8082/api/worker/auth/me"
+                : "http://userservice-app-1:8081/api/user/auth/me";
 
-        return chain.filter(exchange);
+        // Call the /me endpoint to validate session
+        return webClientBuilder.build()
+                .get()
+                .uri(validationUri)
+                .cookie("SESSION", sessionId)
+                .retrieve()
+                .onStatus(
+                        status -> status.isError(),
+                        clientResponse -> Mono.error(new RuntimeException("Session invalid or expired"))
+                )
+                .toBodilessEntity()
+                .flatMap(resp -> chain.filter(exchange))
+                .onErrorResume(ex -> {
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                });
     }
 
     private boolean isPublicEndpoint(String path) {
-        return path.contains("/users/login") ||
-                path.contains("/users/register") ||
-                path.contains("/workers/login") ||
-                path.contains("/workers/register");
-    }
-
-    private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
-        return exchange.getResponse().writeWith(Mono.just(buffer));
+        return path.equals("/api/user/auth/login") ||
+                path.equals("/api/worker/auth/login") ||
+                path.startsWith("/search") ||
+                path.equals("/users") ||
+                path.equals("/workers");
     }
 
     @Override
     public int getOrder() {
-        return -1;
+        return -1; // High precedence
     }
 }
