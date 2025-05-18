@@ -26,7 +26,7 @@ public class ReviewConsumer {
         Optional<Worker> optionalWorker = workerRepository.findById(workerId);
         if (optionalWorker.isPresent()) {
             Worker worker = optionalWorker.get();
-            worker.setRating(averageRating);
+            worker.setAverageRating(averageRating);
             workerRepository.save(worker);
             System.out.println("📦 Worker " + worker.getName() + " updated with new rating: " + averageRating);
         } else {
