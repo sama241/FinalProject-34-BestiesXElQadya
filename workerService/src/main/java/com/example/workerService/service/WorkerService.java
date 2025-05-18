@@ -22,7 +22,6 @@ public class WorkerService {
 
     @Autowired
     private WorkerRepository workerRepository;
-
     private final WorkerCacheService cacheService;
 
     @Autowired
@@ -32,14 +31,13 @@ public class WorkerService {
 
     public void cacheWorker(Worker worker) {
         logger.info("Caching worker with ID: {}", worker.getId());
-        cacheService.cacheWorker(worker, 1); // TTL = 1 minute
+        cacheService.cacheWorker(worker, 1); // TTL = 10 minutes
     }
 
     public Worker getCachedWorker(String id) {
         logger.info("Fetching cached worker with ID: {}", id);
         return cacheService.getCachedWorker(id);
     }
-
     public boolean setWorkingHours(String workerId, List<Integer> newWorkingHours) {
         logger.info("Setting working hours for worker {}", workerId);
         Optional<Worker> workerOptional = workerRepository.findById(workerId);
@@ -67,8 +65,10 @@ public class WorkerService {
 
         if (workerOptional.isPresent()) {
             Worker worker = workerOptional.get();
+
             WorkerProfile profile = new BasicWorkerProfile(worker);
 
+            // Apply the correct badge based on the badgeType parameter
             if ("verified".equalsIgnoreCase(badgeType)) {
                 profile = new VerifiedBadge(profile);
                 worker.addBadge("Verified");
@@ -89,6 +89,8 @@ public class WorkerService {
             throw new RuntimeException("Worker not found with id: " + workerId);
         }
     }
+
+
     public Worker getWorkerById(String id) {
         logger.info("Getting worker by ID: {}", id);
         Worker worker = cacheService.getCachedWorker(id);
@@ -108,6 +110,7 @@ public class WorkerService {
 
         return worker; // can still return null if not found
     }
+
 
     public void deleteCachedWorker(String id) {
         logger.info("Deleting cached worker {}", id);
@@ -155,6 +158,9 @@ public class WorkerService {
 
         return removed;
     }
+
+
+
 
 
 }
