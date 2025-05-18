@@ -28,7 +28,7 @@ public class WorkerService {
     }
 
     public Worker getCachedWorker(String id) {
-        return cacheService.getCachedWorker(id);
+        return workerRepository.findById(id).orElse(null);
     }
     public boolean setWorkingHours(String workerId, List<Integer> newWorkingHours) {
         Optional<Worker> workerOptional = workerRepository.findById(workerId);
@@ -76,21 +76,21 @@ public class WorkerService {
 
     public Worker getWorkerById(String id) {
         // First check Redis
-        Worker worker = cacheService.getCachedWorker(id);
-
-        if (worker != null) {
-            System.out.println(" Cache HIT");
-            return worker;
-        }
-
-        System.out.println(" Cache MISS → loading from MongoDB");
+//        Worker worker = cacheService.getCachedWorker(id);
+//
+//        if (worker != null) {
+//            System.out.println(" Cache HIT");
+//            return worker;
+//        }
+//
+//        System.out.println(" Cache MISS → loading from MongoDB");
 
         // Fallback to MongoDB
-        worker = workerRepository.findById(id).orElse(null);
+        Worker worker = workerRepository.findById(id).orElse(null);
 
-        if (worker != null) {
-            cacheService.cacheWorker(worker, 10); // cache for 10 minutes
-        }
+//        if (worker != null) {
+//            cacheService.cacheWorker(worker, 10); // cache for 10 minutes
+//        }
 
         return worker;
     }
