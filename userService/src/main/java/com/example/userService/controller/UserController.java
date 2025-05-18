@@ -50,7 +50,7 @@ public class UserController {
     }
 
     // Create a new User
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User createdUser = userService.createUser(user);
         return ResponseEntity.ok(createdUser);
@@ -58,7 +58,7 @@ public class UserController {
 
     // Get User by ID
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable UUID userId) {
+    public ResponseEntity<User> getUser(@PathVariable String userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
@@ -100,8 +100,8 @@ public class UserController {
     }
 
     // Update User details
-    @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable UUID userId, @RequestBody User user) {
+    @PutMapping("/update")
+    public ResponseEntity<User> updateUser(@RequestHeader("X-User-Id") String userId, @RequestBody User user) {
 
 
         User updatedUser = userService.updateUser(userId, user);
@@ -109,11 +109,11 @@ public class UserController {
     }
 
     // Delete User by ID
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") String userId) {
 
         userService.deleteUser(userId);
-        userProducer.sendDeleteToReview(userId+"");
+        userProducer.sendDeleteToReview(userId);
         return ResponseEntity.ok().build();
     }
 
@@ -133,8 +133,8 @@ public class UserController {
 //    }
 
 
-    @PostMapping("/{userId}/favorites")
-    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body , HttpSession session) {
+    @PostMapping("/addfavorites")
+    public ResponseEntity<String> addFavoriteWorker(@RequestHeader("X-User-Id") String userId, @RequestBody Map<String, String> body , HttpSession session) {
         session.getAttributeNames().asIterator().forEachRemaining(name -> {
             System.out.println(name + " = " + session.getAttribute(name));
             System.out.println(session.getId());
@@ -179,10 +179,10 @@ public class UserController {
 
 
     // Remove Worker from Favorites
-    @DeleteMapping("/favorites")
+    @DeleteMapping("/deletefavorites")
     public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
         String workerId = favorite.getWorkerId();
-        UUID userId = favorite.getUserId();
+        String userId = favorite.getUserId();
         System.out.println("the user is " + userId);
         System.out.println("the worker is " + workerId);
 
@@ -199,9 +199,9 @@ public class UserController {
     //the error is hereeeeeeeee
     @GetMapping("/favorites")
     public ResponseEntity<List<Map<String, Object>>> getFavoriteWorkers(
-            @RequestHeader("X-User-Id") UUID id) {
+            @RequestHeader("X-User-Id") String id) {
 
-      System.out.println("the user is " + id);
+
         List<Favorite> favorites = userService.getFavoriteWorkers(id);
 
         List<Map<String, Object>> favoriteWorkersInfo = new ArrayList<>();
@@ -215,47 +215,17 @@ public class UserController {
         return ResponseEntity.ok(favoriteWorkersInfo);
     }
 
-
-
-    @GetMapping("/{userId}/bookings")
-    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@PathVariable String userId) {
+    @GetMapping("/bookings")
+    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = bookingClient.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/{userId}/reviews")
-    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@PathVariable String userId) {
+    @GetMapping("/reviews")
+    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = reviewClient.getReviewsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
-
-    @GetMapping("/session")
-    public String getUserBySession(HttpSession session) {
-            // Retrieve session ID
-            String sessionId = session.getId();
-
-//            // Check if the user is active
-//            boolean isActive = userSessionManager.isUserActive(sessionId);
-//
-//            if (!isActive) {
-//                return null;
-//            }
-
-            // Get the user ID from the active session
-            String userId = userSessionManager.getUserIdBySession(sessionId);
-
-
-
-            return userId;  // Successfully return the user details
-
-    }
-
-
-
-
-
-
-
 
 
 }
