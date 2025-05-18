@@ -1,5 +1,6 @@
 package com.example.bookingService.controller;
 
+import com.example.bookingService.client.UserClient;
 import com.example.bookingService.client.WorkerClient;
 import com.example.bookingService.command.BookingDispatcher;
 import com.example.bookingService.model.Booking;
@@ -33,8 +34,12 @@ public class BookingController {
         return bookingRepository.findById(id).orElseThrow();
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable String userId) {
+    @GetMapping("/user")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(HttpSession session) {
+        String userId = (String) session.getAttribute("userId");  // Retrieve userId from session
+        if (userId == null) {
+            return ResponseEntity.status(401).body(null);  // Unauthorized if no session
+        }
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
@@ -53,13 +58,23 @@ public class BookingController {
     private WorkerClient workerClient;
 
     @Autowired
+    private UserClient userClient;
+
+    @Autowired
     private BookingDispatcher dispatcher;
 
 
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Booking booking, HttpSession session) {
-        String userId = (String) session.getAttribute("userId");  // Get userId from session
+        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+            System.out.println("the session is here");
+            System.out.println(name + " = " + session.getAttribute(name));
+            System.out.println(session.getId());
+        });
+
+
+        String userId = userClient.getUserBySession(session) ; // Get userId from session
         if (userId == null) {
             return ResponseEntity.status(401).body("User not logged in");
         }

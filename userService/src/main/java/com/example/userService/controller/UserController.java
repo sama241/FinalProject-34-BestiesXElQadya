@@ -6,6 +6,7 @@ import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.client.BookingClient;
 import com.example.userService.rabbitmq.UserProducer;
+import com.example.userService.singleton.UserSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.util.*;
+
 
 
 @RestController
@@ -30,9 +32,14 @@ public class UserController {
     @Autowired
     private ReviewClient reviewClient;
 
+    private UserSessionManager userSessionManager;
+
+
+
     private  final UserProducer userProducer;
 
     public UserController(UserProducer userProducer) {
+
         this.userProducer = userProducer;
     }
 
@@ -127,7 +134,11 @@ public class UserController {
 
 
     @PostMapping("/{userId}/favorites")
-    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body) {
+    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body , HttpSession session) {
+        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+            System.out.println(name + " = " + session.getAttribute(name));
+            System.out.println(session.getId());
+        });
         String workerId = body.get("workerId");
 
         if (workerId == null || workerId.isEmpty()) {
@@ -214,6 +225,29 @@ public class UserController {
         List<Map<String, Object>>  bookings = reviewClient.getReviewsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
+
+    @GetMapping("/session")
+    public String getUserBySession(HttpSession session) {
+            // Retrieve session ID
+            String sessionId = session.getId();
+
+//            // Check if the user is active
+//            boolean isActive = userSessionManager.isUserActive(sessionId);
+//
+//            if (!isActive) {
+//                return null;
+//            }
+
+            // Get the user ID from the active session
+            String userId = userSessionManager.getUserIdBySession(sessionId);
+
+
+
+            return userId;  // Successfully return the user details
+
+    }
+
+
 
 
 
