@@ -4,6 +4,7 @@ import com.example.reviewService.Client.workerClient;
 import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +26,15 @@ public class ReviewService {
 
     // Create a new review using the Builder pattern
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
-        // Using the Builder to create a Review instance
+        try {
+            ResponseEntity<?> response = WorkerClient.getWorker(workerId);
+            if (response.getStatusCode().is4xxClientError()) {
+                throw new RuntimeException("Worker with ID " + workerId + " does not exist.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error validating worker existence: " + e.getMessage());
+        }
+
         Rating validRating = Rating.fromValue(rating);
         Review review = new Review.Builder()
                 .workerId(workerId)
@@ -98,15 +107,7 @@ public class ReviewService {
 
     // Fetch reviews by workerId and filter out anonymous reviews by userId
     public List<Review> getReviewsByWorkerIdAndUserId(String workerId, String userId) {
-        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
-        System.out.println("Retrieved reviews: " + reviews);  // Log the reviews retrieved
-
-        List<Review> filteredReviews = reviews.stream()
-                .filter(review -> !(review.getUserId().equals(userId) && review.getIsAnonymous()))
-                .collect(Collectors.toList());
-
-        System.out.println("Filtered reviews: " + filteredReviews);  // Log the filtered reviews
-        return filteredReviews;
+        return reviewRepository.findByWorkerIdAndUserIdAndIsAnonymous(workerId, userId, false);
     }
     public List<Review> getallReviewsByWorkerId(String workerId) {
         // Fetch all reviews for the worker

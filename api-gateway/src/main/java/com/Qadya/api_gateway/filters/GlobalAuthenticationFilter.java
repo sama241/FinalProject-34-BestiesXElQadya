@@ -25,6 +25,23 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders headers = exchange.getRequest().getHeaders();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         if (!headers.containsKey(HttpHeaders.AUTHORIZATION)) {
             return unauthorized(exchange, "Missing Authorization header");
         }

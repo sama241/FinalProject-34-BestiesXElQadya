@@ -1,5 +1,7 @@
 package com.example.reviewService.Client;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,4 +12,7 @@ public interface workerClient {
     // This endpoint will be used to update the worker's average rating
     @PutMapping("/{workerId}/average-rating")
      void updateAverageRating(@PathVariable String workerId, @RequestBody double rating);
+    @GetMapping("/{id}")
+    ResponseEntity<?> getWorker(@PathVariable("id") String workerId);  // Match exactly with your controller
+
 }

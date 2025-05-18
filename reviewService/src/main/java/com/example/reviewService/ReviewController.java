@@ -81,8 +81,8 @@ public class ReviewController {
             if (updatedReview.getComment() != null) {
                 existingReview.setComment(updatedReview.getComment());
             }
-            if (updatedReview.getIsAnonymous() != existingReview.getIsAnonymous()) {
-                existingReview.setIsAnonymous(updatedReview.getIsAnonymous());
+            if (updatedReview.getIsAnonymous() != null) {
+                existingReview.setAnonymous(updatedReview.getIsAnonymous());
             }
 
             // Save the updated review
