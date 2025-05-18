@@ -6,6 +6,7 @@ import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.client.BookingClient;
 import com.example.userService.rabbitmq.UserProducer;
+import com.example.userService.singleton.UserSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.util.*;
+
 
 
 @RestController
@@ -30,9 +32,14 @@ public class UserController {
     @Autowired
     private ReviewClient reviewClient;
 
+    private UserSessionManager userSessionManager;
+
+
+
     private  final UserProducer userProducer;
 
     public UserController(UserProducer userProducer) {
+
         this.userProducer = userProducer;
     }
 
@@ -43,7 +50,7 @@ public class UserController {
     }
 
     // Create a new User
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User createdUser = userService.createUser(user);
         return ResponseEntity.ok(createdUser);
@@ -51,7 +58,7 @@ public class UserController {
 
     // Get User by ID
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable UUID userId) {
+    public ResponseEntity<User> getUser(@PathVariable String userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
@@ -93,8 +100,8 @@ public class UserController {
     }
 
     // Update User details
-    @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable UUID userId, @RequestBody User user) {
+    @PutMapping("/update")
+    public ResponseEntity<User> updateUser(@RequestHeader("X-User-Id") String userId, @RequestBody User user) {
 
 
         User updatedUser = userService.updateUser(userId, user);
@@ -102,11 +109,11 @@ public class UserController {
     }
 
     // Delete User by ID
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") String userId) {
 
         userService.deleteUser(userId);
-        userProducer.sendDeleteToReview(userId+"");
+        userProducer.sendDeleteToReview(userId);
         return ResponseEntity.ok().build();
     }
 
@@ -126,8 +133,12 @@ public class UserController {
 //    }
 
 
-    @PostMapping("/{userId}/favorites")
-    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body) {
+    @PostMapping("/addfavorites")
+    public ResponseEntity<String> addFavoriteWorker(@RequestHeader("X-User-Id") String userId, @RequestBody Map<String, String> body , HttpSession session) {
+        session.getAttributeNames().asIterator().forEachRemaining(name -> {
+            System.out.println(name + " = " + session.getAttribute(name));
+            System.out.println(session.getId());
+        });
         String workerId = body.get("workerId");
 
         if (workerId == null || workerId.isEmpty()) {
@@ -168,10 +179,10 @@ public class UserController {
 
 
     // Remove Worker from Favorites
-    @DeleteMapping("/favorites")
+    @DeleteMapping("/deletefavorites")
     public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
         String workerId = favorite.getWorkerId();
-        UUID userId = favorite.getUserId();
+        String userId = favorite.getUserId();
         System.out.println("the user is " + userId);
         System.out.println("the worker is " + workerId);
 
@@ -186,39 +197,35 @@ public class UserController {
 
     // Get Favorite Workers
     //the error is hereeeeeeeee
-    @GetMapping("/{userId}/favorites")
-    public ResponseEntity< List<Map<String, Object>>> getFavoriteWorkers(@PathVariable UUID userId) {
-        List<Favorite> favorites = userService.getFavoriteWorkers(userId);
+    @GetMapping("/favorites")
+    public ResponseEntity<List<Map<String, Object>>> getFavoriteWorkers(
+            @RequestHeader("X-User-Id") String id) {
+
+
+        List<Favorite> favorites = userService.getFavoriteWorkers(id);
 
         List<Map<String, Object>> favoriteWorkersInfo = new ArrayList<>();
 
-        // map the worker ids to the info of worker, using the worker client accordingly
+        // Fetch worker info for each favorite
         for (Favorite favorite : favorites) {
-            // Assuming each Favorite has a workerId, you can call WorkerClient to get worker info
-            ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId().toString());
-
+            ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId());
             favoriteWorkersInfo.add(worker.getBody());
         }
+
         return ResponseEntity.ok(favoriteWorkersInfo);
     }
 
-
-    @GetMapping("/{userId}/bookings")
-    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@PathVariable String userId) {
+    @GetMapping("/bookings")
+    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = bookingClient.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/{userId}/reviews")
-    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@PathVariable String userId) {
+    @GetMapping("/reviews")
+    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = reviewClient.getReviewsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
-
-
-
-
-
 
 
 }

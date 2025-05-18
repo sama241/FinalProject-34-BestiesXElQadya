@@ -23,17 +23,27 @@ public class WorkerAuthController {
     private StringRedisTemplate redisTemplate;
 
     @GetMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestParam String email, @RequestParam String password, HttpSession session) {
+    public ResponseEntity<Map<String, String>> login(
+            @RequestParam String email,
+            @RequestParam String password,
+            HttpSession session) {
+
         Worker worker = workerRepository.findByEmail(email);
 
         if (worker != null && worker.getPassword().equals(password)) {
+            // Store worker ID and session ID in Redis
+            String workerId = worker.getId();
+            String sessionId = session.getId();
 
-            session.setAttribute("workerId", worker.getId());
+            // Store the active worker in Redis
+            redisTemplate.opsForHash().put("activeWorkers", workerId, sessionId);
 
-//            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
+            // Set worker ID in the session for easy access
+            session.setAttribute("workerId", workerId);
 
             Map<String, String> response = new HashMap<>();
-            response.put("workerId", worker.getId());
+            response.put("workerId", workerId);
+            response.put("sessionId", sessionId);
             response.put("message", "Worker logged in successfully!");
 
             return ResponseEntity.ok(response);
@@ -41,7 +51,6 @@ public class WorkerAuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials!"));
         }
     }
-
 
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {
@@ -61,14 +70,22 @@ public class WorkerAuthController {
 
 
     @GetMapping("/me")
-    public String currentWorker(HttpSession session) {
-        Object workerId = session.getAttribute("workerId");
+    public ResponseEntity<String> validateSession(@RequestParam String sessionId) {
+        // Check if the session ID exists in the activeWorkers hash
+        String workerId = (String) redisTemplate.opsForHash().entries("activeWorkers").entrySet().stream()
+                .filter(entry -> entry.getValue().equals(sessionId))
+                .map(entry -> (String) entry.getKey())
+                .findFirst()
+                .orElse(null);
+
         if (workerId != null) {
-            return "Logged in worker ID: " + workerId.toString();
+            return ResponseEntity.ok(workerId);
         } else {
-            return "No worker is logged in!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
         }
     }
+
+
     @GetMapping("/active")
     public Set<String> getActiveWorkers(HttpSession session) {
 
@@ -77,7 +94,15 @@ public class WorkerAuthController {
                 .map(attr -> session.getAttribute(attr).toString())
                 .collect(Collectors.toSet());
     }
-
-
+    // ✅ New Method to Get Worker ID from Session
+    @GetMapping("/worker-id")
+    public ResponseEntity<String> getWorkerId(HttpSession session) {
+        String workerId = (String) session.getAttribute("workerId");
+        if (workerId != null) {
+            return ResponseEntity.ok(workerId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No worker is logged in!");
+        }
+    }
 
 }

@@ -1,9 +1,5 @@
 package com.example.reviewService;
 
-import com.example.reviewService.Client.workerClient;
-import com.example.reviewService.Observer.ReviewData;
-import com.example.reviewService.Observer.WorkerObserver;
-import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +19,15 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    private final workerClient WorkerClient ;
+    private final ReviewProducer reviewProducer;
 
-    public ReviewService(ReviewRepository reviewRepository, workerClient WorkerClient) {
+    public ReviewService(ReviewRepository reviewRepository, ReviewProducer reviewProducer) {
         this.reviewRepository = reviewRepository;
-        this.WorkerClient = WorkerClient;
+        this.reviewProducer = reviewProducer;
     }
 
 
-    // Create a new review using the Builder pattern
+
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
         try {
             ResponseEntity<?> response = WorkerClient.getWorker(workerId);
@@ -46,7 +42,7 @@ public class ReviewService {
         Review review = new Review.Builder()
                 .workerId(workerId)
                 .userId(userId)
-                .rating(validRating.getValue())
+                .rating(rating)
                 .comment(comment)
                 .isAnonymous(isAnonymous)
                 .build();
@@ -65,6 +61,7 @@ public class ReviewService {
         System.out.println("Update call done");
         return savedReview;
     }
+
 
     // Read a review by ID
     public Optional<Review> getReviewById(String id) {
@@ -114,6 +111,28 @@ public class ReviewService {
             throw new RuntimeException("Review not found");
         }
     }
+
+    // Fetch reviews by workerId and filter out anonymous reviews by userId
+    public List<Review> getReviewsByWorkerIdAndUserId(String workerId, String userId) {
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+        System.out.println("Retrieved reviews: " + reviews);  // Log the reviews retrieved
+
+        List<Review> filteredReviews = reviews.stream()
+                .filter(review -> !(review.getUserId().equals(userId) && review.getIsAnonymous()))
+                .collect(Collectors.toList());
+
+        System.out.println("Filtered reviews: " + filteredReviews);  // Log the filtered reviews
+        return filteredReviews;
+    }
+    public List<Review> getallReviewsByWorkerId(String workerId) {
+        // Fetch all reviews for the worker
+        List<Review> reviews = reviewRepository.findByWorkerId(workerId);
+
+        // Return the reviews to be processed by the controller
+        return reviews;
+    }
+
+
 
     // Fetch reviews by workerId and filter out anonymous reviews by userId
     public List<Review> getReviewsByWorkerIdAndUserId(String workerId, String userId) {

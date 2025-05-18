@@ -1,15 +1,15 @@
 package com.Qadya.api_gateway.filters;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Component
 public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
@@ -18,59 +18,71 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
     private WebClient.Builder webClientBuilder;
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
 
-        // Allow public endpoints without auth
+        // Allow public endpoints without authentication
         if (isPublicEndpoint(path)) {
             return chain.filter(exchange);
         }
 
-        // Extract SESSION cookie
-        List<String> cookies = exchange.getRequest().getCookies().getFirst("SESSION") != null ?
-                List.of(exchange.getRequest().getCookies().getFirst("SESSION").getValue()) : null;
+        // Determine the correct authentication endpoint and header based on the path prefix
+        String authServiceUri;
+        String headerName;
 
-        if (cookies == null || cookies.isEmpty()) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+        if (path.startsWith("/workers")) {
+            authServiceUri = "http://worker-service:8082/api/worker/auth/me";
+            headerName = "X-Worker-Id";
+        } else if (path.startsWith("/users")) {
+            authServiceUri = "http://user-service:8081/api/user/auth/me";
+            headerName = "X-User-Id";
+        } else {
+            return unauthorized(exchange);
         }
 
-        String sessionId = cookies.get(0);
+        // Extract and validate the session ID
+        String sessionId = exchange.getRequest().getHeaders().getFirst("Session-Id");
+        if (sessionId == null || sessionId.trim().isEmpty()) {
+            return unauthorized(exchange);
+        }
 
-        // Decide whether it's user or worker path
-        boolean isWorkerPath = path.startsWith("/workers") || path.startsWith("/api/worker/");
-        String validationUri = isWorkerPath
-                ? "http://worker-service:8082/api/worker/auth/me"
-                : "http://userservice-app-1:8081/api/user/auth/me";
-
-        // Call the /me endpoint to validate session
+        // Validate the session
         return webClientBuilder.build()
                 .get()
-                .uri(validationUri)
-                .cookie("SESSION", sessionId)
+                .uri(authServiceUri + "?sessionId=" + sessionId)
                 .retrieve()
-                .onStatus(
-                        status -> status.isError(),
-                        clientResponse -> Mono.error(new RuntimeException("Session invalid or expired"))
-                )
-                .toBodilessEntity()
-                .flatMap(resp -> chain.filter(exchange))
-                .onErrorResume(ex -> {
-                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
-                });
+                .bodyToMono(String.class)
+                .flatMap(userId -> {
+                    if (userId == null || userId.trim().isEmpty()) {
+                        return unauthorized(exchange);
+                    }
+
+                    // Add the correct user or worker ID to the headers
+                    ServerHttpRequest updatedRequest = exchange.getRequest()
+                            .mutate()
+                            .header(headerName, userId.trim())
+                            .build();
+
+                    return chain.filter(exchange.mutate().request(updatedRequest).build());
+                })
+                .onErrorResume(error -> unauthorized(exchange));
+    }
+
+    private Mono<Void> unauthorized(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        return exchange.getResponse().setComplete();
     }
 
     private boolean isPublicEndpoint(String path) {
-        return path.equals("/api/user/auth/login") ||
-                path.equals("/api/worker/auth/login") ||
-                path.startsWith("/search") ||
-                path.equals("/users") ||
-                path.equals("/workers");
+        return path.equals("/api/user/auth/login")
+                || path.equals("/api/worker/auth/login")
+                || path.startsWith("/search")
+                || path.equals("/users")
+                || path.equals("/workers/create");
     }
 
     @Override
     public int getOrder() {
-        return -1; // High precedence
+        return -1;
     }
 }
