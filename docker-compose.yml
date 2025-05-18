@@ -14,6 +14,25 @@ services:
       - connection
     restart: always
 
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - connection
+    restart: always
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "8001:8001"  # Redis Insight UI
+    networks:
+      - connection
+    restart: always
+
 networks:
   connection:
     external: true
+    name: connection

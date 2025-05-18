@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "user-service", url = "http://user-service:8081/users")
+@FeignClient(name = "user-service", url = "http://localhost:8081/api/user/auth")
 public interface UserClient {
 
-    @GetMapping("/session")
-    String getUserBySession(HttpSession session);
+    @GetMapping("/validate-session")
+    ResponseEntity<String> validateSession(@RequestParam String sessionId);
 }
 
 

@@ -197,21 +197,24 @@ public class UserController {
 
     // Get Favorite Workers
     //the error is hereeeeeeeee
-    @GetMapping("/{userId}/favorites")
-    public ResponseEntity< List<Map<String, Object>>> getFavoriteWorkers(@PathVariable UUID userId) {
-        List<Favorite> favorites = userService.getFavoriteWorkers(userId);
+    @GetMapping("/favorites")
+    public ResponseEntity<List<Map<String, Object>>> getFavoriteWorkers(
+            @RequestHeader("X-User-Id") UUID id) {
+
+      System.out.println("the user is " + id);
+        List<Favorite> favorites = userService.getFavoriteWorkers(id);
 
         List<Map<String, Object>> favoriteWorkersInfo = new ArrayList<>();
 
-        // map the worker ids to the info of worker, using the worker client accordingly
+        // Fetch worker info for each favorite
         for (Favorite favorite : favorites) {
-            // Assuming each Favorite has a workerId, you can call WorkerClient to get worker info
-            ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId().toString());
-
+            ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId());
             favoriteWorkersInfo.add(worker.getBody());
         }
+
         return ResponseEntity.ok(favoriteWorkersInfo);
     }
+
 
 
     @GetMapping("/{userId}/bookings")

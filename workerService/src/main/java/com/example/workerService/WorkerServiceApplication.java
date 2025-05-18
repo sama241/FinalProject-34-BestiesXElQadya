@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableRabbit
 @EnableFeignClients
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) // ⚡ ADD THIS EXCLUDE
-@EnableFeignClients
+
 public class WorkerServiceApplication {
 
 	public static void main(String[] args) {

@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Your Spring Boot User Service (app)
   app:
     build: .
     ports:
@@ -14,7 +13,7 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_HOST=redis  # Use the shared Redis
       - SPRING_REDIS_PORT=6379
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
@@ -24,7 +23,6 @@ services:
       - connection
     depends_on:
       - postgres
-      - redis
 
   postgres:
     image: postgres:14
@@ -37,24 +35,6 @@ services:
       - "5433:5432"
     networks:
       - connection
-
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - connection
-    restart: always
-
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisInsight
-    ports:
-      - "5540:5540"
-    networks:
-      - connection
-    restart: always
 
 networks:
   connection:

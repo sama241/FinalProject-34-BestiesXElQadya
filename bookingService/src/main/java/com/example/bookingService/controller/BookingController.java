@@ -10,7 +10,7 @@ import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,36 +20,6 @@ public class BookingController {
 
     @Autowired
     private BookingRepository bookingRepository;
-
-
-    @GetMapping
-    public List<Booking> getAll() {
-        return bookingService.findAll();
-
-    }
-
-
-    @GetMapping("/{id}")
-    public Booking getById(@PathVariable Long id) {
-        return bookingRepository.findById(id).orElseThrow();
-    }
-
-    @GetMapping("/user")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(HttpSession session) {
-        String userId = (String) session.getAttribute("userId");  // Retrieve userId from session
-        if (userId == null) {
-            return ResponseEntity.status(401).body(null);  // Unauthorized if no session
-        }
-        List<Booking> bookings = bookingService.getBookingsByUserId(userId);
-        return ResponseEntity.ok(bookings);
-    }
-
-    @GetMapping("/worker/{workerId}")
-    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
-        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
-        return ResponseEntity.ok(bookings);
-    }
-
 
     @Autowired
     private BookingService bookingService;
@@ -63,18 +33,44 @@ public class BookingController {
     @Autowired
     private BookingDispatcher dispatcher;
 
+    // Validate the session and return the user ID
+    private String validateSession(String sessionId) {
+        ResponseEntity<String> response = userClient.validateSession(sessionId);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return response.getBody();
+        }
+        throw new IllegalStateException("Invalid session");
+    }
 
+    @GetMapping
+    public List<Booking> getAll(@RequestParam String sessionId) {
+        validateSession(sessionId);
+        return bookingService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Booking getById(@PathVariable Long id, @RequestParam String sessionId) {
+        validateSession(sessionId);
+        return bookingRepository.findById(id).orElseThrow();
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@RequestParam String sessionId) {
+        String userId = validateSession(sessionId);
+        List<Booking> bookings = bookingService.getBookingsByUserId(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/worker/{workerId}")
+    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId, @RequestParam String sessionId) {
+        validateSession(sessionId);
+        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+        return ResponseEntity.ok(bookings);
+    }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Booking booking, HttpSession session) {
-        // Extract only the user ID from the session
-        String userId = (String) session.getAttribute("userId");
-        System.out.println("User ID from session: " + userId);
-
-
-        if (userId == null) {
-            return ResponseEntity.status(401).body("User not logged in");
-        }
+    public ResponseEntity<?> create(@RequestBody Booking booking, @RequestParam String sessionId) {
+        String userId = validateSession(sessionId);
 
         int hour = booking.getTimeslot().getHour();
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
@@ -88,17 +84,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.save(booking));
     }
 
-
-
     @PutMapping("/{id}/reschedule")
-    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id,
-                                               @RequestParam String newTime) {
+    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id, @RequestParam String newTime, @RequestParam String sessionId) {
+        validateSession(sessionId);
+
         Booking booking = bookingService.findById(id);
-
-        if (newTime == null) {
-            return ResponseEntity.badRequest().body("newTime is required");
-        }
-
         LocalDateTime parsed = LocalDateTime.parse(newTime);
         dispatcher.reschedule("reschedule", booking, parsed);
 
@@ -107,40 +97,36 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
-        Booking booking = bookingService.findById(id);
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id, @RequestParam String sessionId) {
+        validateSession(sessionId);
 
+        Booking booking = bookingService.findById(id);
         dispatcher.cancel("cancel", booking);
 
         bookingService.save(booking);
         return ResponseEntity.ok("Booking cancelled successfully");
     }
 
-
     @PutMapping("/{id}")
-    public Booking update(@PathVariable Long id, @RequestBody Booking booking) {
+    public Booking update(@PathVariable Long id, @RequestBody Booking booking, @RequestParam String sessionId) {
+        validateSession(sessionId);
         booking.setId(id);
         return bookingRepository.save(booking);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id, @RequestParam String sessionId) {
+        validateSession(sessionId);
         bookingRepository.deleteById(id);
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id) {
+    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id, @RequestParam String sessionId) {
+        validateSession(sessionId);
         Booking booking = bookingService.findById(id);
-        BookingStatus status= BookingStatus.IN_PROGRESS;
-
-        booking.setStatus(status);
+        booking.setStatus(BookingStatus.IN_PROGRESS);
         bookingService.save(booking);
 
-        return ResponseEntity.ok("Booking status updated to " + status);
+        return ResponseEntity.ok("Booking status updated to " + booking.getStatus());
     }
-
-
-
-
-
 }

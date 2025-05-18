@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/workers")
@@ -160,17 +161,8 @@ public class WorkerController {
         }
     }
 
-    @PutMapping("/{id}/addBadge")
-    public ResponseEntity<String> addBadge(@PathVariable String id, @RequestParam String badgeType, HttpSession session) {
-        String sessionWorkerId = (String) session.getAttribute("workerId");
-
-        if (sessionWorkerId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login first.");
-        }
-
-        if (!sessionWorkerId.equals(id)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own badges.");
-        }
+    @PutMapping("/addBadge")
+    public ResponseEntity<String> addBadge(@RequestHeader("X-User-Id") String id, @RequestParam String badgeType) {
 
         String result = workerService.addBadgeToWorker(id, badgeType);
         return ResponseEntity.ok(result);
