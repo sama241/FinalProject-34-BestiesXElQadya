@@ -1,9 +1,12 @@
 package com.example.reviewService;
 
 import com.example.reviewService.Client.workerClient;
+import com.example.reviewService.Observer.ReviewData;
+import com.example.reviewService.Observer.WorkerObserver;
 import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
 import com.example.reviewService.rabbitmq.ReviewProducer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +15,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
+
+
+    @Autowired
+    private ReviewProducer reviewProducer;
 
     private final ReviewRepository reviewRepository;
 
@@ -43,6 +50,9 @@ public class ReviewService {
 
         System.out.println("Calling WorkerService to update average: " + newAverage);
         WorkerClient.updateAverageRating(workerId, newAverage);
+        ReviewData reviewData = new ReviewData();
+        reviewData.registerObserver(new WorkerObserver(reviewProducer, workerId));
+        reviewData.setAverageRating((int) newAverage);
         System.out.println("Update call done");
         return savedReview;
     }
