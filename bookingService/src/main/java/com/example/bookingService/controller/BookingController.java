@@ -8,11 +8,13 @@ import com.example.bookingService.rabbitmq.BookingProducer;
 import com.example.bookingService.repository.BookingRepository;
 import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -36,11 +38,31 @@ public class BookingController {
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
+//    @GetMapping("/worker/{workerId}")
+//    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+//        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+//        if (bookings.isEmpty()) {
+//            return ResponseEntity
+//                    .status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("error", "No bookings found or worker does not exist"));
+//        }
+//        return ResponseEntity.ok(bookings);
+//    }
+
     @GetMapping("/worker/{workerId}")
-    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+    public ResponseEntity<?> getBookingsByWorkerId(@PathVariable String workerId) {
         List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+
+        if (bookings.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No bookings found or worker does not exist"));
+        }
+
         return ResponseEntity.ok(bookings);
     }
+
+
 
     @Autowired
     private BookingService bookingService;

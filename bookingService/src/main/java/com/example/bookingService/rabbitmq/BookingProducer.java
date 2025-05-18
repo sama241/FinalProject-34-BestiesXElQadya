@@ -9,7 +9,6 @@ import java.util.Map;
 
 @Component
 public class BookingProducer {
-
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
