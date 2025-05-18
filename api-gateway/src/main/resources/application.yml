@@ -1,0 +1,37 @@
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: userService
+          uri: http://localhost:8081
+          predicates:
+            - Path=/users/**
+        - id: workerService
+          uri: http://localhost:8082
+          predicates:
+            - Path=/workers/**
+        - id: bookingService
+          uri: http://localhost:8083
+          predicates:
+            - Path=/bookings/**
+        - id: reviewService
+          uri: http://localhost:8084
+          predicates:
+            - Path=/reviews/**
+        - id: searchService
+          uri: http://localhost:8085
+          predicates:
+            - Path=/search/**
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+

@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
+
 @RequestMapping("/reviews")
+@RestController
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -22,6 +23,7 @@ public class ReviewController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
+
         // Create and save the review using the service
         Review savedReview = reviewService.createReview(
                 review.getWorkerId(),

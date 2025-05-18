@@ -11,11 +11,11 @@ public class Favorite {
     @GeneratedValue(strategy = GenerationType.AUTO)  // Auto-generate UUID for Favorite ID
     private UUID id;
     private UUID userId;
-    private UUID workerId;
+    private String workerId;
     // Constructor
 
     // tab w id el record?
-    public Favorite(UUID userId, UUID workerId, UUID id) {
+    public Favorite(UUID userId, String workerId, UUID id) {
         this.id = id;
         this.userId = userId;
         this.workerId = workerId;
@@ -25,7 +25,7 @@ public class Favorite {
 
     }
 
-    public Favorite(UUID userId, UUID workerId ){
+    public Favorite(UUID userId, String workerId ){
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.workerId = workerId;
@@ -36,11 +36,11 @@ public class Favorite {
         return userId;
     }
 
-    public UUID getWorkerId() {
+    public String getWorkerId() {
         return workerId;
     }
 
-    public void setWorkerId(UUID workerId) {
+    public void setWorkerId(String workerId) {
         this.workerId = workerId;
     }
 
