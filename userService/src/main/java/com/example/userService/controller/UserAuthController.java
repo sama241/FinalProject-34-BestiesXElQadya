@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/user/auth")
 public class UserAuthController {
@@ -29,11 +31,11 @@ public class UserAuthController {
 //        this.redisTemplate = redisTemplate;
 //        this.userService = userService;
 //    }
-    @GetMapping("/login")
-    public String login(@RequestParam String email, @RequestParam String password, HttpSession session) {
-        User user = userService.getByEmail(email);
+    @PostMapping("/login")
+    public String login(@RequestBody  User loginRequest , HttpSession session) {
+        User user = userService.getByEmail(loginRequest.getEmail());
 
-        if (user != null && user.getPassword().equals(password)) {
+        if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
             UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
             Command loginCommand = new LoginCommand(user.getId(), session, sessionManager);
             return loginCommand.execute();
@@ -42,10 +44,19 @@ public class UserAuthController {
         }
     }
 
+
+
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
         Command logoutCommand = new LogoutCommand(session, sessionManager);
         return logoutCommand.execute();
     }
+
+//    @GetMapping("/active-sessions")
+//    public Set<Object> getActiveSessions() {
+//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
+//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
+//        return activeSessions;
+//    }
 }
