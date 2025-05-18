@@ -9,7 +9,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8082
-      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_HOST=shared-redis
       - SPRING_REDIS_PORT=6379
       - SPRING_DATA_MONGODB_URI=mongodb://root:example@mongo:27017/workerdb?authSource=admin
       - SPRING_RABBITMQ_HOST=rabbitmq
@@ -17,20 +17,11 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
-      - redis
       - mongo
     networks:
       - connection
     restart: always
 
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6379:6379"
-    restart: always
-    networks:
-      - connection
 
   mongo:
     image: mongo
@@ -48,3 +39,4 @@ networks:
   connection:
     external: true
     name: connection
+

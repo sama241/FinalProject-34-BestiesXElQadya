@@ -12,12 +12,12 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_HOST=shared-redis
       - SPRING_REDIS_PORT=6379
 
     depends_on:
       - postgres
-      - redis
+
 
   postgres:
     image: postgres:14
@@ -29,12 +29,7 @@ services:
     ports:
       - "5433:5432"
 
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6379:6379"
-    restart: always
+
 
 networks:
   default:
