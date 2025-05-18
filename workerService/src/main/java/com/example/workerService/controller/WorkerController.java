@@ -1,10 +1,14 @@
 package com.example.workerService.controller;
-//import com.example.workerService.factory.WorkerFactory;
+
+import com.example.workerService.client.BookingClient;
+import com.example.workerService.factory.WorkerFactoryDispatcher;
+import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
-
 import com.example.workerService.service.WorkerService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,31 +24,62 @@ public class WorkerController {
     private WorkerRepository workerRepository;
     @Autowired
     private WorkerService workerService;
+    @Autowired
+    private BookingClient bookingClient;
 
-    @PostMapping
-    public Worker createWorker(@RequestBody Worker worker) {
-        return workerRepository.save(worker);
+    // ✅ Create new Worker
+//    @PostMapping("/create")
+//    public Worker createWorker22(@RequestBody Worker worker) {
+//        return workerRepository.save(worker);
+//    }
+
+    @PostMapping("/create")
+    public Worker createWorker(@RequestBody Worker workerRequest) {
+
+        WorkerProfileType profile = WorkerFactoryDispatcher.getWorkerProfile(workerRequest.getProfession());
+        System.out.println("Hiring: " + profile.getWorkerRole()); // Optional log
+
+        Worker worker = new Worker(
+                workerRequest.getName(),
+                workerRequest.getEmail(),
+                workerRequest.getPassword(),
+                workerRequest.getProfession(),
+                workerRequest.getSkills(),
+                workerRequest.getAvailableHours()
+        );
+
+        return workerService.saveWorker(worker);
     }
 
-    // ✅ Get all Workers
     @GetMapping
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    // ✅ Get Worker by ID
     @GetMapping("/{id}")
-    public Worker getWorkerById(@PathVariable String id) {
-        return workerRepository.findById(id).orElse(null);
+    public ResponseEntity<?> getWorker(@PathVariable String id) {
+        Worker worker = workerService.getWorkerById(id);
+        if (worker == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
+        }
+        return ResponseEntity.ok(worker);
     }
 
-    // ✅ Update Worker
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker) {
+    public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
+
+        // 🛡️ Check if the user is logged in
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+        if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
+            throw new RuntimeException("Unauthorized: You can only update your own profile.");
+        }
+
+        // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(id);
         if (optional.isPresent()) {
             Worker existing = optional.get();
 
+            // ✅ Update only the provided fields
             if (updatedWorker.getName() != null) {
                 existing.setName(updatedWorker.getName());
             }
@@ -73,38 +108,89 @@ public class WorkerController {
                 existing.setBadges(updatedWorker.getBadges());
             }
 
-            return workerRepository.save(existing);
+            // 💾 Save the updated worker
+            Worker saved = workerRepository.save(existing);
+
+            // 🔁 Refresh cache with updated worker
+            workerService.cacheWorker(saved);
+
+            return saved;
         }
-        return null;
+
+        throw new RuntimeException("Worker not found.");
     }
 
 
-    // ✅ Delete Worker
     @DeleteMapping("/{id}")
-    public String deleteWorker(@PathVariable String id) {
+    public ResponseEntity<String> deleteWorker(@PathVariable String id, HttpSession session) {
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+
+        if (sessionWorkerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login first.");
+        }
+
+        if (!sessionWorkerId.equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only delete your own profile.");
+        }
+
         if (workerRepository.existsById(id)) {
             workerRepository.deleteById(id);
-            return "Worker deleted";
+            return ResponseEntity.ok("Worker deleted");
         }
-        return "Worker not found";
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found");
     }
 
-
     @PutMapping("/workinghours/{id}")
-    public String setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours) {
+    public ResponseEntity<String> setWorkingHours(@PathVariable String id, @RequestBody List<Integer> newWorkingHours, HttpSession session) {
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+
+        if (sessionWorkerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login first.");
+        }
+
+        if (!sessionWorkerId.equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own working hours.");
+        }
+
         boolean updated = workerService.setWorkingHours(id, newWorkingHours);
         if (updated) {
-            return "Working hours updated successfully!";
+            return ResponseEntity.ok("Working hours updated successfully!");
         } else {
-            return "Worker not found.";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
         }
     }
 
     @PutMapping("/{id}/addBadge")
-    public String addBadge(@PathVariable String id, @RequestParam String badgeType) {
-        return workerService.addBadgeToWorker(id, badgeType);
+    public ResponseEntity<String> addBadge(@PathVariable String id, @RequestParam String badgeType, HttpSession session) {
+        String sessionWorkerId = (String) session.getAttribute("workerId");
+
+        if (sessionWorkerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login first.");
+        }
+
+        if (!sessionWorkerId.equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own badges.");
+        }
+
+        String result = workerService.addBadgeToWorker(id, badgeType);
+        return ResponseEntity.ok(result);
+    }
+    @PostMapping("/cache")
+    public ResponseEntity<String> cacheWorker(@RequestBody Worker worker) {
+        workerService.cacheWorker(worker);
+        return ResponseEntity.ok("Worker cached for 10 minutes.");
     }
 
+    @GetMapping("/cache/{id}")
+    public ResponseEntity<?> getCachedWorker(@PathVariable String id) {
+        Worker worker = workerService.getCachedWorker(id);
+        if (worker == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Worker not in cache or TTL expired.");
+        }
+        return ResponseEntity.ok(worker);
+    }
 
     @PutMapping("/{workerId}/add-timeslot")
     public ResponseEntity<String> addTimeSlot(@PathVariable String workerId, @RequestParam int hour) {
@@ -127,6 +213,10 @@ public class WorkerController {
         }
     }
 
-
+    @GetMapping("/{workerId}/bookings")
+    public ResponseEntity<List<Map<String, Object>>> getWorkerBookings(@PathVariable String workerId) {
+        List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
+        return ResponseEntity.ok(bookings);
+    }
 
 }

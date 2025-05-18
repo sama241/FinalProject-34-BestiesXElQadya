@@ -65,6 +65,11 @@ public class UserService {
         return userRepository.findByPhone(phone);
     }
 
+
+    public boolean existsByUserId(UUID userId) {
+        return userRepository.existsById(userId);
+    }
+
     // Update User details
     // say if we update haga haga mesh kolo?
 //<<<<<<< HEAD

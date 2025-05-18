@@ -5,12 +5,13 @@ import com.example.userService.client.WorkerClient;
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.client.BookingClient;
+import com.example.userService.rabbitmq.UserProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.userService.service.UserService;
-
+import jakarta.servlet.http.HttpSession;
 import java.util.*;
 
 
@@ -28,6 +29,12 @@ public class UserController {
     private WorkerClient workerClient;
     @Autowired
     private ReviewClient reviewClient;
+
+    private  final UserProducer userProducer;
+
+    public UserController(UserProducer userProducer) {
+        this.userProducer = userProducer;
+    }
 
     // get all
     @GetMapping
@@ -89,6 +96,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable UUID userId, @RequestBody User user) {
 
+
         User updatedUser = userService.updateUser(userId, user);
         return ResponseEntity.ok(updatedUser);
     }
@@ -96,7 +104,9 @@ public class UserController {
     // Delete User by ID
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+
         userService.deleteUser(userId);
+        userProducer.sendDeleteToReview(userId+"");
         return ResponseEntity.ok().build();
     }
 
@@ -128,6 +138,23 @@ public class UserController {
         Favorite favorite = new Favorite();
         favorite.setUserId(userId);
         favorite.setWorkerId(workerId);
+
+        // CHECK ON WORKER ID BY CLIENT
+        ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId());
+
+        if (worker.getStatusCode() != HttpStatus.OK) {
+            // Handle other unexpected status codes if necessary
+            return ResponseEntity.badRequest().body("Invalid worker ID: " + favorite.getWorkerId());
+        }
+
+//        if (worker == null || worker.isEmpty()) {
+//            return ResponseEntity.badRequest().body("Invalid worker ID: " + favorite.getWorkerId());
+//        }
+
+        // CHECK ON USER ID BY SERVICE
+        if(!userService.existsByUserId(favorite.getUserId())){
+            return ResponseEntity.badRequest().body("Invalid user ID: " + favorite.getUserId());
+        }
 
         Favorite result = userService.addFavoriteWorker(favorite);
 
@@ -168,9 +195,9 @@ public class UserController {
         // map the worker ids to the info of worker, using the worker client accordingly
         for (Favorite favorite : favorites) {
             // Assuming each Favorite has a workerId, you can call WorkerClient to get worker info
-            Map<String, Object> worker = workerClient.getWorkerById(favorite.getWorkerId().toString());
+            ResponseEntity<Map<String, Object>> worker = workerClient.getWorkerById(favorite.getWorkerId().toString());
 
-            favoriteWorkersInfo.add(worker);
+            favoriteWorkersInfo.add(worker.getBody());
         }
         return ResponseEntity.ok(favoriteWorkersInfo);
     }

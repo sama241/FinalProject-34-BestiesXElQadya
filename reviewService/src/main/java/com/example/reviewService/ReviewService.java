@@ -1,7 +1,7 @@
 package com.example.reviewService;
 
-import com.example.reviewService.model.Rating;
 import com.example.reviewService.model.Review;
+import com.example.reviewService.rabbitmq.ReviewProducer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,26 +12,33 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    public ReviewService(ReviewRepository reviewRepository) {
+    private final ReviewProducer reviewProducer;
+
+    public ReviewService(ReviewRepository reviewRepository, ReviewProducer reviewProducer) {
         this.reviewRepository = reviewRepository;
+        this.reviewProducer = reviewProducer;
     }
 
 
-    // Create a new review using the Builder pattern
+
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
-        // Using the Builder to create a Review instance
-        Rating validRating = Rating.fromValue(rating);
         Review review = new Review.Builder()
                 .workerId(workerId)
                 .userId(userId)
-                .rating(validRating.getValue())
+                .rating(rating)
                 .comment(comment)
                 .isAnonymous(isAnonymous)
                 .build();
 
-        // Save the review to MongoDB and return the saved review with the auto-generated ID
-        return reviewRepository.save(review);  // MongoDB will populate the `id` field automatically
+        Review savedReview = reviewRepository.save(review);
+
+        double newAverage = calculateAverageRating(workerId);
+
+        reviewProducer.sendReviewToWorker(workerId, newAverage);
+
+        return savedReview;
     }
+
 
     // Read a review by ID
     public Optional<Review> getReviewById(String id) {

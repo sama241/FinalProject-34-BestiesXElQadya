@@ -10,7 +10,6 @@ public class Worker {
 
     @Id
     private String id;
-
     private String name;
     private String email;
     private String password;
@@ -20,12 +19,14 @@ public class Worker {
     private List<Integer> availableHours;  // Available working hours (e.g., [9, 10, 11, 14])
     private String location;
     private List<String> badges;            // For badges/certifications
-
+    private double rating;
     // Constructors
     public Worker() {
         this.skills = new ArrayList<>();
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
+        this.isAvailable = false;
+        this.rating=0;
         this.isAvailable = false;  // ➔ Default to false when empty
         this.location= "";
 
@@ -120,8 +121,7 @@ public class Worker {
         this.badges = badges;
     }
 
-    // 🔥 Helper Methods
-    // Method to book an available hour
+
     public boolean bookHour(int hour) {
         if (availableHours.contains(hour)) {
             availableHours.remove(Integer.valueOf(hour));
@@ -164,11 +164,19 @@ public class Worker {
         return false;
     }
 
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
     public String getLocation() {
         return location;
     }
 
     public void setLocation(String location) {
         this.location = location;
+
     }
 }
