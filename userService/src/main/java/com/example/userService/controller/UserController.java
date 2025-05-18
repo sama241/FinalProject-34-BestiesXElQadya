@@ -132,7 +132,6 @@ public class UserController {
 //        return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
 //    }
 
-
     @PostMapping("/{userId}/favorites")
     public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body , HttpSession session) {
         session.getAttributeNames().asIterator().forEachRemaining(name -> {
@@ -175,6 +174,7 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
     }
+
 
 
 

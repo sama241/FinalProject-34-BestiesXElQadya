@@ -23,23 +23,6 @@ services:
       - connection
     restart: always
 
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6377:6379"
-    restart: always
-    networks:
-      - connection
-
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisinsight
-    ports:
-      - "5540:5540"
-    networks:
-      - connection
-    restart: always
 
   mongo:
     image: mongo

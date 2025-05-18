@@ -1,18 +1,20 @@
 package com.example.bookingService.controller;
 
-import com.example.bookingService.client.UserClient;
 import com.example.bookingService.client.WorkerClient;
 import com.example.bookingService.command.BookingDispatcher;
 import com.example.bookingService.model.Booking;
 import com.example.bookingService.model.BookingStatus;
+import com.example.bookingService.rabbitmq.BookingProducer;
 import com.example.bookingService.repository.BookingRepository;
 import com.example.bookingService.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -20,35 +22,46 @@ public class BookingController {
 
     @Autowired
     private BookingRepository bookingRepository;
-
-
+    @Autowired
+    private BookingProducer bookingProducer;
     @GetMapping
     public List<Booking> getAll() {
         return bookingService.findAll();
-
     }
-
-
     @GetMapping("/{id}")
     public Booking getById(@PathVariable Long id) {
         return bookingRepository.findById(id).orElseThrow();
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(HttpSession session) {
-        String userId = (String) session.getAttribute("userId");  // Retrieve userId from session
-        if (userId == null) {
-            return ResponseEntity.status(401).body(null);  // Unauthorized if no session
-        }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable String userId) {
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
+//    @GetMapping("/worker/{workerId}")
+//    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+//        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+//        if (bookings.isEmpty()) {
+//            return ResponseEntity
+//                    .status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("error", "No bookings found or worker does not exist"));
+//        }
+//        return ResponseEntity.ok(bookings);
+//    }
 
     @GetMapping("/worker/{workerId}")
-    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+    public ResponseEntity<?> getBookingsByWorkerId(@PathVariable String workerId) {
         List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+
+        if (bookings.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No bookings found or worker does not exist"));
+        }
+
         return ResponseEntity.ok(bookings);
     }
+
 
 
     @Autowired
@@ -58,39 +71,34 @@ public class BookingController {
     private WorkerClient workerClient;
 
     @Autowired
-    private UserClient userClient;
-
-    @Autowired
     private BookingDispatcher dispatcher;
 
-
-
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Booking booking, HttpSession session) {
-        session.getAttributeNames().asIterator().forEachRemaining(name -> {
-            System.out.println("the session is here");
-            System.out.println(name + " = " + session.getAttribute(name));
-            System.out.println(session.getId());
-        });
-
-
-        String userId = userClient.getUserBySession(session) ; // Get userId from session
-        if (userId == null) {
-            return ResponseEntity.status(401).body("User not logged in");
-        }
-
+    public ResponseEntity<?> create(@RequestBody Booking booking) {
         int hour = booking.getTimeslot().getHour();
-        // Try to "book" by removing a time slot
-        String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
-        if (!result.toLowerCase().contains("success")) {
-            return ResponseEntity.badRequest().body("Selected hour is not available.");
-        }
+        // ✅ Use MQ instead of REST
+        bookingProducer.sendBookingStatusToWorker(booking.getWorkerId(), String.valueOf(hour), "confirmed");
 
-        booking.setUserId(userId);  // Set the userId from session
         booking.setStatus(BookingStatus.CONFIRMED);
         return ResponseEntity.ok(bookingService.save(booking));
     }
+
+
+//    @PostMapping
+//    public ResponseEntity<?> create(@RequestBody Booking booking) {
+//        int hour = booking.getTimeslot().getHour();
+//
+//        // Try to "book" by removing a time slot
+//        String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
+//
+//        if (!result.toLowerCase().contains("success")) {
+//            return ResponseEntity.badRequest().body("Selected hour is not available.");
+//        }
+//
+//        booking.setStatus(BookingStatus.CONFIRMED);
+//        return ResponseEntity.ok(bookingService.save(booking));
+//    }
 
 
     @PutMapping("/{id}/reschedule")

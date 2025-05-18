@@ -6,6 +6,7 @@ import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 import com.example.workerService.service.WorkerService;
+import feign.FeignException;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,15 +60,16 @@ public class WorkerController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
+
         if (worker == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found.");
+            return ResponseEntity.status(404).body("Worker with ID '" + id + "' not found.");
         }
+
         return ResponseEntity.ok(worker);
     }
 
     @PutMapping("/{id}")
     public Worker updateWorker(@PathVariable String id, @RequestBody Worker updatedWorker, HttpSession session) {
-
         // 🛡️ Check if the user is logged in
         String sessionWorkerId = (String) session.getAttribute("workerId");
         if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
@@ -213,10 +215,25 @@ public class WorkerController {
         }
     }
 
+
+
     @GetMapping("/{workerId}/bookings")
-    public ResponseEntity<List<Map<String, Object>>> getWorkerBookings(@PathVariable String workerId) {
-        List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
-        return ResponseEntity.ok(bookings);
+    public ResponseEntity<?> getWorkerBookings(@PathVariable String workerId) {
+        try {
+            List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
+
+            return ResponseEntity.ok(bookings);
+
+        } catch (FeignException.NotFound notFoundEx) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No bookings found for worker ID: " + workerId));
+        } catch (FeignException fe) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "booking-service error: " + fe.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Unexpected error occurred."));
+        }
     }
 
 }
