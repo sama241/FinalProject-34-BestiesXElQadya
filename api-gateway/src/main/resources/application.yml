@@ -7,11 +7,11 @@ spring:
     gateway:
       routes:
         - id: userService
-          uri: http://userservice-app-1:8081
+          uri: http://user-service:8081
           predicates:
             - Path=/users/**
         - id: userAuthService
-          uri: http://userservice-app-1:8081
+          uri: http://user-service:8081
           predicates:
             - Path=/api/user/auth/**
         - id: workerService
@@ -34,6 +34,7 @@ spring:
           uri: http://search-service:8085
           predicates:
             - Path=/search/**
+
 server:
   port: 8761
   error:
@@ -41,6 +42,13 @@ server:
     include-binding-errors: always
     include-stacktrace: always
 
+management:
+  server:
+    port: 8761
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
 
 spring.session.store-type: redis
 spring.data.redis.host: redis

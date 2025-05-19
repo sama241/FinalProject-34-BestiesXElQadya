@@ -14,7 +14,11 @@ spec:
     spec:
       containers:
         - name: worker-service
+<<<<<<< HEAD
           image: rawanehab02/worker-service:latest # to be added
+=======
+          image: semo24/workerservice:latest
+>>>>>>> d1b6e82801072d09e271abc16c59363947e3c3d9
           ports:
             - containerPort: 8082
           env:

@@ -43,12 +43,8 @@ public class UserController {
         this.userProducer = userProducer;
     }
 
-    // get all
-    @GetMapping
-    public List<User> getUsers() {
-        return userService.getUsers();
-    }
 
+    // ------------ PUBLIC ROUTES ---------------------------
     // Create a new User
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
@@ -56,15 +52,22 @@ public class UserController {
         return ResponseEntity.ok(createdUser);
     }
 
+    // get all
+    @GetMapping("/get/all")
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
+
     // Get User by ID
-    @GetMapping("/{userId}")
+    @GetMapping("/get/{userId}")
     public ResponseEntity<User> getUser(@PathVariable String userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 
     // Get User by Username
-    @GetMapping("/username/{username}")
+    @GetMapping("/get/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> optionalUser = userService.getByUsername(username);
 
@@ -76,7 +79,7 @@ public class UserController {
     }
 
     // Get User by Email
-    @GetMapping("/email/{email}")
+    @GetMapping("/get/email/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
         User optionalUser = userService.getByEmail(email);
 
@@ -88,7 +91,7 @@ public class UserController {
     }
 
     // Get User by Phone
-    @GetMapping("/phone/{phone}")
+    @GetMapping("/get/phone/{phone}")
     public ResponseEntity<User> getUserByPhone(@PathVariable String phone) {
         Optional<User> optionalUser = userService.getByPhone(phone);
 
@@ -98,6 +101,8 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // ------------ PRIVATE ROUTES [ NEEDS LOGIN ] ---------------------------
 
     // Update User details
     @PutMapping("/update")
@@ -180,9 +185,8 @@ public class UserController {
 
     // Remove Worker from Favorites
     @DeleteMapping("/deletefavorites")
-    public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
-        String workerId = favorite.getWorkerId();
-        String userId = favorite.getUserId();
+    public ResponseEntity<String> removeFavoriteWorker(@RequestHeader("X-User-Id") String userId,  @RequestBody Map<String, String> body) {
+        String workerId = body.get("workerId");
         System.out.println("the user is " + userId);
         System.out.println("the worker is " + workerId);
 
