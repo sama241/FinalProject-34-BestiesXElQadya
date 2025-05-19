@@ -30,7 +30,7 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
         String authServiceUri;
         String headerName;
 
-        if (path.startsWith("/workers")) {
+        if (path.startsWith("/workers") || path.startsWith("/bookings")) {
             authServiceUri = "http://worker-service:8082/api/worker/auth/me";
             headerName = "X-Worker-Id";
         } else if (path.startsWith("/users")) {

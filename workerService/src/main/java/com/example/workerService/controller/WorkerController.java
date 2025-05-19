@@ -68,9 +68,6 @@ public class WorkerController {
 
     @PutMapping("/update")
     public Worker updateWorker(@RequestHeader("X-Worker-Id") String workerId, @RequestBody Worker updatedWorker) {
-
-
-
         // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(workerId);
         if (optional.isPresent()) {

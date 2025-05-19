@@ -82,8 +82,6 @@ public class WorkerService {
 //            System.out.println(" Cache HIT");
 //            return worker;
 //        }
-//
-//        System.out.println(" Cache MISS → loading from MongoDB");
 
         // Fallback to MongoDB
         Worker worker = workerRepository.findById(id).orElse(null);

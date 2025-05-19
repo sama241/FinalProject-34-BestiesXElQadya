@@ -61,7 +61,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/worker/{workerId}")
+    @GetMapping("/worker")
     public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId, @RequestParam String sessionId) {
         validateSession(sessionId);
         List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
