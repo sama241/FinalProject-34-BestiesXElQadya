@@ -7,11 +7,11 @@ import java.util.UUID;
 
 public class LoginCommand implements Command {
 
-    private final UUID userId;
+    private final String userId;
     private final HttpSession session;
     private final UserSessionManager sessionManager;
 
-    public LoginCommand(UUID userId, HttpSession session, UserSessionManager sessionManager) {
+    public LoginCommand(String userId, HttpSession session, UserSessionManager sessionManager) {
         this.userId = userId;
         this.session = session;
         this.sessionManager = sessionManager;

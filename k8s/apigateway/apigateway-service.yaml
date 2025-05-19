@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apigateway-service
+  labels:
+    app: apigateway-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: apigateway-service
+  ports:
+    - port: 80
+      targetPort: 8761

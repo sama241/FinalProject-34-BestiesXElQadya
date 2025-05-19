@@ -1,5 +1,4 @@
 package com.example.bookingService.controller;
-
 import com.example.bookingService.client.UserClient;
 import com.example.bookingService.client.WorkerClient;
 import com.example.bookingService.command.BookingDispatcher;
@@ -33,44 +32,36 @@ public class BookingController {
     @Autowired
     private BookingDispatcher dispatcher;
 
-    // Validate the session and return the user ID
-    private String validateSession(String sessionId) {
-        ResponseEntity<String> response = userClient.validateSession(sessionId);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            return response.getBody();
-        }
-        throw new IllegalStateException("Invalid session");
-    }
 
     @GetMapping
-    public List<Booking> getAll(@RequestParam String sessionId) {
-        validateSession(sessionId);
+    public List<Booking> getAll() {
+
         return bookingService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Booking getById(@PathVariable Long id, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public Booking getById(@PathVariable Long id) {
+
         return bookingRepository.findById(id).orElseThrow();
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(@RequestParam String sessionId) {
-        String userId = validateSession(sessionId);
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@RequestHeader("X-User-Id") String userId) {
+
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/worker")
-    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    @GetMapping("/worker/{workerId}")
+    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+
         List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
         return ResponseEntity.ok(bookings);
     }
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody Booking booking, @RequestParam String sessionId) {
-        String userId = validateSession(sessionId);
+    @PostMapping("/create")
+    public ResponseEntity<?> create(@RequestBody Booking booking, @RequestHeader("X-User-Id") String userId) {
+
 
         int hour = booking.getTimeslot().getHour();
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
@@ -85,8 +76,8 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/reschedule")
-    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id, @RequestParam String newTime, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id, @RequestParam String newTime) {
+
 
         Booking booking = bookingService.findById(id);
         LocalDateTime parsed = LocalDateTime.parse(newTime);
@@ -97,8 +88,8 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long id, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+
 
         Booking booking = bookingService.findById(id);
         dispatcher.cancel("cancel", booking);
@@ -108,21 +99,21 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public Booking update(@PathVariable Long id, @RequestBody Booking booking, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public Booking update(@PathVariable Long id, @RequestBody Booking booking) {
+
         booking.setId(id);
         return bookingRepository.save(booking);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public void delete(@PathVariable Long id) {
+
         bookingRepository.deleteById(id);
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id, @RequestParam String sessionId) {
-        validateSession(sessionId);
+    public ResponseEntity<?> updateBookingStatus(@PathVariable Long id) {
+
         Booking booking = bookingService.findById(id);
         booking.setStatus(BookingStatus.IN_PROGRESS);
         bookingService.save(booking);
