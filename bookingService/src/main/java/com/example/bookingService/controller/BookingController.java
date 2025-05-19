@@ -59,6 +59,7 @@ public class BookingController {
 
 
         int hour = booking.getTimeslot().getHour();
+        System.out.println("HOUR"+hour);
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
         if (!result.toLowerCase().contains("success")) {
