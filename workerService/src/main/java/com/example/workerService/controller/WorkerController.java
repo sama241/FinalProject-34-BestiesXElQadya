@@ -44,9 +44,11 @@ public class WorkerController {
                 workerRequest.getName(),
                 workerRequest.getEmail(),
                 workerRequest.getPassword(),
+                workerRequest.getLocation(),
                 workerRequest.getProfession(),
                 workerRequest.getSkills(),
                 workerRequest.getAvailableHours()
+
         );
 
         return workerService.saveWorker(worker);

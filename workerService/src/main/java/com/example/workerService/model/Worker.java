@@ -42,7 +42,7 @@ public class Worker {
         this.averageRating=0;
 
     }
-    public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours, String location) {
+    public Worker(String name, String email, String password, String location , String profession, List<String> skills, List<Integer> availableHours) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -54,8 +54,7 @@ public class Worker {
         this.isAvailable = (availableHours != null && !availableHours.isEmpty());
         this.averageRating=0;// ➔ if availableHours not empty, available!
     }
-
-    public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours) {
+   public Worker(String name, String email, String password, String profession, List<String> skills, List<Integer> availableHours) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -65,6 +64,7 @@ public class Worker {
         this.badges = new ArrayList<>();
         this.isAvailable = (availableHours != null && !availableHours.isEmpty());
         this.averageRating=0;// ➔ if availableHours not empty, available!
+
     }
 
     // Getters and Setters
@@ -72,6 +72,8 @@ public class Worker {
     public String getId() {
         return id;
     }
+
+
 
     public void setId(String id) {
         this.id = id;
@@ -184,6 +186,7 @@ public class Worker {
     public void setRating(double rating) {
         this.rating = rating;
     }
+
     public String getLocation() {
         return location;
     }
@@ -192,4 +195,5 @@ public class Worker {
         this.location = location;
 
     }
+
 }
