@@ -30,7 +30,7 @@ public class ReviewController {
         Review savedReview = reviewService.createReview(
                 review.getWorkerId(),
                 review.getUserId(),
-                review.getRating(),
+                review.getRating()
                 review.getComment(),
                 review.getIsAnonymous()
         );
