@@ -1,5 +1,6 @@
 package com.example.workerService.controller;
 
+import com.example.workerService.client.BookingClient;
 import com.example.workerService.factory.WorkerFactoryDispatcher;
 import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/workers")
@@ -67,11 +69,7 @@ public class WorkerController {
     @PutMapping("/update")
     public Worker updateWorker(@RequestHeader("X-Worker-Id") String workerId, @RequestBody Worker updatedWorker) {
 
-        // 🛡️ Check if the user is logged in
-        String sessionWorkerId = (String) session.getAttribute("workerId");
-        if (sessionWorkerId == null || !sessionWorkerId.equals(id)) {
-            throw new RuntimeException("Unauthorized: You can only update your own profile.");
-        }
+
 
         // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(workerId);
@@ -150,6 +148,7 @@ public class WorkerController {
         String result = workerService.addBadgeToWorker(workerId, badgeType);
         return ResponseEntity.ok(result);
     }
+
     @PostMapping("/cache")
     public ResponseEntity<String> cacheWorker(@RequestBody Worker worker) {
         workerService.cacheWorker(worker);
@@ -193,6 +192,8 @@ public class WorkerController {
         List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
         return ResponseEntity.ok(bookings);
     }
+
+
     @PutMapping("/{workerId}/average-rating")
     public ResponseEntity<?> updateAverageRating(@PathVariable String workerId, @RequestBody double newAverageRating) {
         return workerRepository.findById(workerId)

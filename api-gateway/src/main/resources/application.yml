@@ -7,11 +7,11 @@ spring:
     gateway:
       routes:
         - id: userService
-          uri: http://userservice-app-1:8081
+          uri: http://app:8081
           predicates:
             - Path=/users/**
         - id: userAuthService
-          uri: http://userservice-app-1:8081
+          uri: http://app:8081
           predicates:
             - Path=/api/user/auth/**
         - id: workerService
