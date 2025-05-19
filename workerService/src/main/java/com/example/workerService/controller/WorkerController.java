@@ -191,4 +191,15 @@ public class WorkerController {
         return ResponseEntity.ok(bookings);
     }
 
+
+    @PutMapping("/{workerId}/average-rating")
+    public ResponseEntity<?> updateAverageRating(@PathVariable String workerId, @RequestBody double newAverageRating) {
+        return workerRepository.findById(workerId)
+                .map(worker -> {
+                    worker.setAverageRating(newAverageRating);
+                    workerRepository.save(worker);  // ⚠️ MUST save after update!
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found"));
+    }
 }
