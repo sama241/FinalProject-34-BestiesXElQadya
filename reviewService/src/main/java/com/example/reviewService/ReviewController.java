@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-
+@RequestMapping("/reviews")
 @RestController
 public class ReviewController {
 
@@ -23,9 +23,10 @@ public class ReviewController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/user")
-    public ResponseEntity<Review> createReview(@RequestHeader("X-User-Id") String userId ,@RequestBody Review review) {
+    public ResponseEntity<?> createReview(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody Review review) {
 
-        // Create and save the review using the service
         Review savedReview = reviewService.createReview(
                 review.getWorkerId(),
                 userId,
@@ -33,9 +34,9 @@ public class ReviewController {
                 review.getComment(),
                 review.getIsAnonymous()
         );
-
-        // Return the saved review, now including the generated `id`
         return new ResponseEntity<>(savedReview, HttpStatus.CREATED);
+
+
     }
 
     // Get a review by its ID
@@ -47,11 +48,18 @@ public class ReviewController {
     }
 
     // Get all reviews for a specific worker
-    @GetMapping("/worker")  //hatghyr
-    public ResponseEntity<List<Review>> getReviewsByWorkerId(@RequestHeader("X-Worker-Id") String workerId) {
+    @GetMapping("/worker")  // hattghyr
+    public ResponseEntity<?> getReviewsByWorkerId(@RequestHeader("X-Worker-Id") String workerId) {
         List<Review> reviews = reviewService.getReviewsByWorkerId(workerId);
+
+        if (reviews.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No reviews found for worker with id: " + workerId);
+        }
+
         return ResponseEntity.ok(reviews);
     }
+
 
 
     // Get all reviews made by a specific user (optional)
@@ -108,12 +116,12 @@ public class ReviewController {
 
     // Endpoint to mark a review as helpful
     @PutMapping("/user/{reviewId}/helpful")
-    public ResponseEntity<Review> markReviewAsHelpful(@PathVariable String reviewId) {
+    public ResponseEntity<?> markReviewAsHelpful(@PathVariable String reviewId) {
         try {
             Review updatedReview = reviewService.markReviewAsHelpful(reviewId);  // Increment helpful votes
             return ResponseEntity.ok(updatedReview);  // Return the updated review
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Review not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Review Not Found");  // Review not found
         }
     }
 
@@ -147,7 +155,7 @@ public class ReviewController {
             return ResponseEntity.ok(reviews);
         }
     }
-//ana worker badwr ala kol el reviews el ma3mola 3alaya law review fehom annonymous maynf3sh ashof el userid bta3o
+    //ana worker badwr ala kol el reviews el ma3mola 3alaya law review fehom annonymous maynf3sh ashof el userid bta3o
     @GetMapping("/worker/getallreviews") //hattghyr
     public ResponseEntity<List<Review>> getReviewsByWorkerIdAndHideAnonymousUser(
             @RequestHeader("X-Worker-Id") String workerId) {
@@ -165,7 +173,7 @@ public class ReviewController {
 //        if (reviews.isEmpty()) {
 //            return ResponseEntity.notFound().build();
 //        } else {
-            return ResponseEntity.ok(reviews); // Return reviews with userId hidden for anonymous reviews
+        return ResponseEntity.ok(reviews); // Return reviews with userId hidden for anonymous reviews
 
     }
 }

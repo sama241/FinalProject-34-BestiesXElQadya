@@ -6,11 +6,13 @@ import com.example.workerService.factory.WorkerProfileType;
 import com.example.workerService.model.Worker;
 import com.example.workerService.repository.WorkerRepository;
 import com.example.workerService.service.WorkerService;
+import feign.FeignException;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -164,24 +166,38 @@ public class WorkerController {
         return ResponseEntity.ok(worker);
     }
 
+    // Add time slot (hour) for worker
+    // Add time slot (hour) for worker
     @PutMapping("/add-timeslot")
     public ResponseEntity<String> addTimeSlot(@RequestHeader("X-Worker-Id") String workerId, @RequestParam int hour) {
-        boolean result = workerService.addTimeSlots(workerId, hour);
-        if (result) {
-            return ResponseEntity.ok("Hour added successfully.");
-        } else {
-            return ResponseEntity.badRequest().body("Hour already exists or worker not found.");
+        try {
+            boolean result = workerService.addTimeSlots(workerId, hour);
+            if (result) {
+                return ResponseEntity.ok("Time slot " + hour + " added successfully for worker ID: " + workerId + ".");
+            } else {
+                // Throw a ResponseStatusException with a custom message if the hour exists or worker is not found
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to add time slot. Hour " + hour + " already exists or worker not found.");
+            }
+        } catch (FeignException e) {
+            // Throw a ResponseStatusException with a custom message when an error occurs
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Worker not available or hour not available.");
         }
     }
 
-    // ➖ Remove time slot (hour) from worker
+    // Remove time slot (hour) from worker
     @PutMapping("/remove-timeslot")
     public ResponseEntity<String> removeTimeSlot(@RequestHeader("X-Worker-Id") String workerId, @RequestParam int hour) {
-        boolean result = workerService.removeTimeSlots(workerId, hour);
-        if (result) {
-            return ResponseEntity.ok("Hour removed successfully.");
-        } else {
-            return ResponseEntity.badRequest().body("Hour not found or worker not found.");
+        try {
+            boolean result = workerService.removeTimeSlots(workerId, hour);
+            if (result) {
+                return ResponseEntity.ok("Time slot " + hour + " removed successfully for worker ID: " + workerId + ".");
+            } else {
+                // Throw a ResponseStatusException with a custom message if the hour is not found or worker is not found
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to remove time slot. Hour " + hour + " not found or worker not found.");
+            }
+        } catch (FeignException e) {
+            // Throw a ResponseStatusException with a custom message when an error occurs
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Worker not available or hour not available.");
         }
     }
 

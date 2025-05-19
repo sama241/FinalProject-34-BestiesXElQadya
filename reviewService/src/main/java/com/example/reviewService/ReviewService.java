@@ -33,15 +33,6 @@ public class ReviewService {
 
     // Create a new review using the Builder pattern
     public Review createReview(String workerId, String userId, int rating, String comment, boolean isAnonymous) {
-        try {
-            ResponseEntity<?> response = WorkerClient.getWorker(workerId);
-            if (response.getStatusCode().is4xxClientError()) {
-                throw new RuntimeException("Worker with ID " + workerId + " does not exist.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error validating worker existence: " + e.getMessage());
-        }
-
         Rating validRating = Rating.fromValue(rating);
         Review review = new Review.Builder()
                 .workerId(workerId)
@@ -58,7 +49,7 @@ public class ReviewService {
         // Use Feign to notify WorkerService to update the worker's average rating
 
         System.out.println("Calling WorkerService to update average: " + newAverage);
-       // WorkerClient.updateAverageRating(workerId, newAverage);
+        // WorkerClient.updateAverageRating(workerId, newAverage);
         ReviewData reviewData = new ReviewData();
         reviewData.registerObserver(new WorkerObserver(reviewProducer, workerId));
         reviewData.setAverageRating((int) newAverage);

@@ -26,7 +26,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
-                  key: BOOKING_DB_URI
+                  key: BOOKING_DB
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:

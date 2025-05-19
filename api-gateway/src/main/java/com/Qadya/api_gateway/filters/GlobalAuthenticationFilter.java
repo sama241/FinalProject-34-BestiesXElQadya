@@ -80,11 +80,9 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
                 || path.equals("/users/create")
                 || path.startsWith("/users/get")
                 || path.equals("/workers/create")
-                || path.equals("/bookings/get")
+                || path.startsWith("/bookings/get")
                 || path.startsWith("/workers/get")
-                || path.startsWith("/reviews/get")
-                || path.equals("/users");
-
+                || path.startsWith("/reviews/get");
     }
 
     @Override
