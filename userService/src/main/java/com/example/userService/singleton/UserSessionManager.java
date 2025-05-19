@@ -53,7 +53,7 @@ public class UserSessionManager {
 //        return Collections.singleton(redisTemplate.opsForSet().members(ACTIVE_USERS_KEY));
 //    }
 
-public void addActiveUser(UUID userId, String sessionId) {
+public void addActiveUser(String userId, String sessionId) {
     redisTemplate.opsForHash().put(ACTIVE_USERS_KEY, sessionId, userId.toString());
 }
 

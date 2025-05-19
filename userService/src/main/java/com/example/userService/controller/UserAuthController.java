@@ -28,17 +28,34 @@ public class UserAuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public String login(@RequestBody User loginRequest, HttpSession session) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody User loginRequest, HttpSession session) {
         User user = userService.getByEmail(loginRequest.getEmail());
 
         if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
             UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
             Command loginCommand = new LoginCommand(user.getId(), session, sessionManager);
-            return loginCommand.execute();
+            String response = loginCommand.execute();
+
+            // Add the session ID and user ID to activeUsers
+            String sessionId = session.getId();
+            sessionManager.addActiveUser(user.getId(), sessionId);
+            System.out.println("User " + user.getId() + " logged in with session " + sessionId);
+
+            // Prepare the response
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("sessionId", sessionId);
+            responseBody.put("userId", user.getId());
+            responseBody.put("message", response);
+
+            return ResponseEntity.ok(responseBody);
         } else {
-            return "Invalid credentials!";
+            // Prepare the error response
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Invalid credentials!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
+
 
     @PostMapping("/logout")
     public String logout(HttpSession session) {
@@ -48,26 +65,22 @@ public class UserAuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<String> validateSession(HttpSession session) {
-        Object userId = session.getAttribute("userId");
-        if (userId != null) {
-            System.out.println("ME"+userId);
-            return ResponseEntity.ok(userId.toString());
+    public ResponseEntity<String> validateSession(@RequestParam String sessionId) {
+        // Check if the session ID exists in the activeUsers hash
+        String userId = (String) redisTemplate.opsForHash().entries("activeUsers").entrySet().stream()
+                .filter(entry -> entry.getKey().equals(sessionId))
+                .map(entry -> (String) entry.getValue())
+                .findFirst()
+                .orElse(null);
 
+        if (userId != null) {
+            return ResponseEntity.ok(userId);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
         }
     }
 
-    @GetMapping("/validate-session")
-    public ResponseEntity<String> validateSession(@RequestParam String sessionId) {
-        String userId = (String) redisTemplate.opsForValue().get(sessionId);
 
-        if (userId != null) {
-            return ResponseEntity.ok(userId);
-        }
 
-        return ResponseEntity.status(401).body("Invalid session");
-    }
 
 }

@@ -7,11 +7,11 @@ spring:
     gateway:
       routes:
         - id: userService
-          uri: http://userservice-app-1:8081
+          uri: http://user-service:8081
           predicates:
             - Path=/users/**
         - id: userAuthService
-          uri: http://userservice-app-1:8081
+          uri: http://user-service:8081
           predicates:
             - Path=/api/user/auth/**
         - id: workerService
@@ -36,7 +36,6 @@ spring:
             - Path=/search/**
 server:
   port: 8761
-
 
 spring.session.store-type: redis
 spring.data.redis.host: redis
