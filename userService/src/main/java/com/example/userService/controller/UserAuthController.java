@@ -1,5 +1,6 @@
 package com.example.userService.controller;
 
+
 import com.example.userService.command.Command;
 import com.example.userService.command.LoginCommand;
 import com.example.userService.command.LogoutCommand;
@@ -9,12 +10,10 @@ import com.example.userService.singleton.UserSessionManager;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -22,13 +21,18 @@ import java.util.Set;
 public class UserAuthController {
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private  StringRedisTemplate redisTemplate;
 
     @Autowired
-    private UserService userService;
+    private  UserService userService;
 
+//    @Autowired
+//    public UserAuthController(StringRedisTemplate redisTemplate, UserService userService) {
+//        this.redisTemplate = redisTemplate;
+//        this.userService = userService;
+//    }
     @PostMapping("/login")
-    public String login(@RequestBody User loginRequest, HttpSession session) {
+    public String login(@RequestBody  User loginRequest , HttpSession session) {
         User user = userService.getByEmail(loginRequest.getEmail());
 
         if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
@@ -40,6 +44,8 @@ public class UserAuthController {
         }
     }
 
+
+
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
@@ -47,27 +53,10 @@ public class UserAuthController {
         return logoutCommand.execute();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<String> validateSession(HttpSession session) {
-        Object userId = session.getAttribute("userId");
-        if (userId != null) {
-            System.out.println("ME"+userId);
-            return ResponseEntity.ok(userId.toString());
-
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
-        }
-    }
-
-    @GetMapping("/validate-session")
-    public ResponseEntity<String> validateSession(@RequestParam String sessionId) {
-        String userId = (String) redisTemplate.opsForValue().get(sessionId);
-
-        if (userId != null) {
-            return ResponseEntity.ok(userId);
-        }
-
-        return ResponseEntity.status(401).body("Invalid session");
-    }
-
+//    @GetMapping("/active-sessions")
+//    public Set<Object> getActiveSessions() {
+//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
+//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
+//        return activeSessions;
+//    }
 }

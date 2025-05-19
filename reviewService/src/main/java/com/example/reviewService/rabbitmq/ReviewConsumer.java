@@ -18,7 +18,7 @@ public class ReviewConsumer {
         // Soft delete or archive the reviews for this user
         reviewRepository.deleteByUserId(userId);
 
-        System.out.println("🗑Archived reviews for userId: " + userId);
+        System.out.println("Archived reviews for userId: " + userId);
     }
 
 }
