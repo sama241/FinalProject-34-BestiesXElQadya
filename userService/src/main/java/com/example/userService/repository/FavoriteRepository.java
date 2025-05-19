@@ -7,18 +7,21 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
+public interface FavoriteRepository extends JpaRepository<Favorite, String> {
 
     @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END FROM favorites WHERE user_id = :userId AND worker_id = :workerId", nativeQuery = true)
-    boolean existsByUserIdAndWorkerId(UUID userId, String workerId);
+    boolean existsByUserIdAndWorkerId(String userId, String workerId);
 
-    List<Favorite> findByUserId(UUID userId);
+    List<Favorite> findByUserId(String userId);
 
     @Modifying
-    @Query(value="DELETE FROM favorites WHERE user_id=:userId and worker_id=:workerId", nativeQuery = true)
-    void deleteByUserIdAndWorkerId(UUID userId, String workerId);
+    @Transactional
+    @Query(value="DELETE FROM favorites WHERE user_id = :userId AND worker_id = :workerId", nativeQuery = true)
+    void deleteByUserIdAndWorkerId(String userId, String workerId);
 
-    // delete all favorite records bta3et user mo3ayan
+    @Modifying
+    @Transactional
+    @Query(value="DELETE FROM favorites WHERE user_id = :userId", nativeQuery = true)
+    void deleteAllByUserId(String userId);
 }

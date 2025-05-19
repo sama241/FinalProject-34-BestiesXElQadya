@@ -12,6 +12,7 @@ import java.util.List;
 
         // Fetch all reviews created by a specific user (optional)
         List<Review> findByUserId(String userId);
+        List<Review> findByWorkerIdAndUserId(String workerId, String userId);
 
         // 🗑️ Delete all reviews for a specific user (needed for user deletion)
         void deleteByUserId(String userId);
