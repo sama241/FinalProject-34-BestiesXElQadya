@@ -30,7 +30,7 @@ public class WorkerAuthController {
 
             session.setAttribute("workerId", worker.getId());
 
-//            redisTemplate.opsForSet().add("activeWorkers", worker.getId());
+//          redisTemplate.opsForSet().add("activeWorkers", worker.getId());
 
             Map<String, String> response = new HashMap<>();
             response.put("workerId", worker.getId());
