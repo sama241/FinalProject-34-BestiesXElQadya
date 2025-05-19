@@ -34,9 +34,17 @@ spring:
           uri: http://search-service:8085
           predicates:
             - Path=/search/**
+
 server:
   port: 8761
 
+management:
+  server:
+    port: 8761
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
 
 spring.session.store-type: redis
 spring.data.redis.host: redis

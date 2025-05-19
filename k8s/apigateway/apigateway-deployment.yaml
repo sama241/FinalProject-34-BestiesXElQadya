@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway-service
+  labels:
+    app: apigateway-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apigateway-service
+  template:
+    metadata:
+      labels:
+        app: apigateway-service
+    spec:
+      containers:
+        - name: apigateway-service
+          image: semo24/api-gateway:latest  # Replace with your actual image
+          ports:
+            - containerPort: 8761
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: SPRING_MAIN_WEB_APPLICATION_TYPE
+              value: reactive
+            - name: SPRING_SESSION_STORE_TYPE
+              value: redis
+            - name: SPRING_DATA_REDIS_HOST
+              value: redis
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: SPRING_SESSION_REDIS_NAMESPACE
+              value: app_sessions
+
+            # User Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_ID
+              value: user-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
+              value: http://user-service:8081
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
+              value: Path=/users/**
+
+            # Worker Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_ID
+              value: worker-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
+              value: http://worker-service:8082
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+              value: Path=/workers/**
+
+            # Booking Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+              value: booking-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+              value: http://booking-service:8083
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+              value: Path=/bookings/**
+
+            # Review Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+              value: review-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+              value: http://review-service:8084
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+              value: Path=/reviews/**
+
+            # Search Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
+              value: search-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
+              value: http://search-service:8085
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
+              value: Path=/search/**
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 15
+            periodSeconds: 30
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 5
+            periodSeconds: 15
+
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
