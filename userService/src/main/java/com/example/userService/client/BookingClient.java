@@ -10,6 +10,6 @@ import java.util.Map;
 @FeignClient(name = "booking-service", url = "http://booking-service:8083/bookings")
 public interface BookingClient {
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/get/user/{userId}")
     List<Map<String, Object>>  getBookingsByUserId(@PathVariable("userId") String userId);
 }

@@ -7,7 +7,6 @@ import java.util.List;
 
 @Document(collection = "workers")
 public class Worker {
-
     @Id
     private String id;
     private String name;
@@ -36,7 +35,6 @@ public class Worker {
         this.badges = new ArrayList<>();
         this.availableHours = new ArrayList<>();
         this.isAvailable = false;
-        this.rating=0;
         this.isAvailable = false;  // ➔ Default to false when empty
         this.location= "";
         this.averageRating=0;
@@ -177,13 +175,6 @@ public class Worker {
         return false;
     }
 
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
     public String getLocation() {
         return location;
     }

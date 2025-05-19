@@ -13,15 +13,10 @@ public class Booking {
 
     private String workerId;
     private String userId;
-
     private LocalDateTime timeslot;
-
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
-
     private String location;
-
-
 
     //constructors
     public Booking() {}

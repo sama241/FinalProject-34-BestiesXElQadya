@@ -2,6 +2,8 @@ package com.example.bookingService.service;
 
 import com.example.bookingService.model.Booking;
 import com.example.bookingService.repository.BookingRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,14 +12,21 @@ import java.util.List;
 @Service
 public class BookingService {
 
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+
+
     @Autowired
     private BookingRepository bookingRepository;
-
-    // Create a booking
     public Booking save(Booking booking) {
-        return bookingRepository.save(booking);
+        try {
+            Booking savedBooking = bookingRepository.save(booking);
+            logger.info("Booking created for user: {}", booking.getUserId());
+            return savedBooking;
+        } catch (Exception e) {
+            logger.error("Failed to reserve slot for user: {}", booking.getUserId(), e);
+            throw e;
+        }
     }
-
     // Get all bookings
     public List<Booking> findAll() {
         return bookingRepository.findAll();

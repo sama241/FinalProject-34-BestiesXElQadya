@@ -16,5 +16,6 @@ import java.util.List;
 
         // 🗑️ Delete all reviews for a specific user (needed for user deletion)
         void deleteByUserId(String userId);
+     List<Review> findByWorkerIdAndUserIdAndIsAnonymous(String workerId, String userId, boolean isAnonymous);
 
     }

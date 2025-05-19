@@ -12,8 +12,6 @@ public class UserProducer {
     private RabbitTemplate rabbitTemplate;
 
     public void sendDeleteToReview(String userId) {
-
-
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY,userId);
         System.out.println("User deleted sent to review with ID :" + userId);
     }
