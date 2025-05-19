@@ -34,7 +34,7 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
             authServiceUri = "http://worker-service:8082/api/worker/auth/me";
             headerName = "X-Worker-Id";
         } else if (path.startsWith("/users") || path.startsWith("/reviews/user")) {
-            authServiceUri = "http://app:8081/api/user/auth/me";
+            authServiceUri = "http://user-service:8081/api/user/auth/me";
             headerName = "X-User-Id";
         } else {
             return unauthorized(exchange);

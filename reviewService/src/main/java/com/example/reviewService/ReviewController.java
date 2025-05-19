@@ -155,10 +155,10 @@ public class ReviewController {
             }
         });
 
-        if (reviews.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
+//        if (reviews.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        } else {
             return ResponseEntity.ok(reviews); // Return reviews with userId hidden for anonymous reviews
-        }
+
     }
 }

@@ -32,7 +32,7 @@ public class User {
 
     // Constructor without ID (ID is auto-generated)
     public User(String username, String name, String password, String email, String phone, String address) {
-        this.id = generateRandomId();
+        //this.id = generateRandomId();
         this.username = username;
         this.name = name;
         this.password = password;
