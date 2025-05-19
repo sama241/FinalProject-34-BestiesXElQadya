@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RequestMapping("/reviews")
 @RestController
-@RequestMapping("/reviews")
+
 public class ReviewController {
 
     private final ReviewService reviewService;
