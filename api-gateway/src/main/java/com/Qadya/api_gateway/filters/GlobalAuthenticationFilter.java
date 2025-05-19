@@ -30,16 +30,13 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
         String authServiceUri;
         String headerName;
 
-        if (path.startsWith("/workers") || path.startsWith("/reviews/worker")) {
+        if (path.startsWith("/workers") || path.startsWith("/reviews/worker") || path.startsWith("/bookings/worker")) {
             authServiceUri = "http://worker-service:8082/api/worker/auth/me";
             headerName = "X-Worker-Id";
-        } else if (path.startsWith("/users") || path.startsWith("/reviews/user")) {
+        } else if (path.startsWith("/users") || path.startsWith("/reviews/user") || path.startsWith("/bookings/user")) {
             authServiceUri = "http://user-service:8081/api/user/auth/me";
             headerName = "X-User-Id";
-        } else if(path.startsWith("/bookings/create")){
-            authServiceUri = "http://user-service:8081/api/user/auth/me";
-            headerName = "X-User-Id";
-        }else {
+        } else {
             return unauthorized(exchange);
         }
 
@@ -83,7 +80,7 @@ public class GlobalAuthenticationFilter implements GlobalFilter, Ordered {
                 || path.equals("/users/create")
                 || path.startsWith("/users/get")
                 || path.equals("/workers/create")
-                || path.equals("/bookings")
+                || path.equals("/bookings/get")
                 || path.startsWith("/workers/get")
                 || path.startsWith("/reviews/get")
                 || path.equals("/users");

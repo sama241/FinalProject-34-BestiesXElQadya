@@ -21,8 +21,6 @@ public class Booking {
 
     private String location;
 
-
-
     //constructors
     public Booking() {}
 

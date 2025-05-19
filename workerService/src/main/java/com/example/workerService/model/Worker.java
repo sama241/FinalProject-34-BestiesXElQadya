@@ -7,7 +7,6 @@ import java.util.List;
 
 @Document(collection = "workers")
 public class Worker {
-
     @Id
     private String id;
     private String name;
