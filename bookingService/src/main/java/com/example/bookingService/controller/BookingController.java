@@ -1,4 +1,5 @@
 package com.example.bookingService.controller;
+
 import com.example.bookingService.client.UserClient;
 import com.example.bookingService.client.WorkerClient;
 import com.example.bookingService.command.BookingDispatcher;
@@ -64,6 +65,7 @@ public class BookingController {
 
 
         int hour = booking.getTimeslot().getHour();
+        System.out.println("HOUR"+hour);
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
         if (!result.toLowerCase().contains("success")) {
