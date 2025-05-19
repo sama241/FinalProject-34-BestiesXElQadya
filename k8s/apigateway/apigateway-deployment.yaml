@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: apigateway-service
-          image: your-dockerhub-username/api-gateway:latest  # Replace with your actual image
+          image: semo24/api-gateway:latest  # Replace with your actual image
           ports:
             - containerPort: 8761
           env:
