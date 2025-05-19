@@ -23,7 +23,7 @@ services:
       - connection
     restart: always
 
-  redis-insight:
+  redisinsight:
     image: redis/redisinsight:latest
     container_name: redisinsight
     ports:

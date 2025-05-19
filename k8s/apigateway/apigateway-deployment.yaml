@@ -73,20 +73,6 @@ spec:
             - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
               value: Path=/search/**
 
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8761
-            initialDelaySeconds: 15
-            periodSeconds: 30
-
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8761
-            initialDelaySeconds: 5
-            periodSeconds: 15
-
           resources:
             limits:
               memory: "512Mi"

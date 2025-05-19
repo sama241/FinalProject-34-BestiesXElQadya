@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: review-service
-          image: your-dockerhub-username/review-service:latest #to be added
+          image: semo24/review-service:latest #to be added
           ports:
             - containerPort: 8084
           env:

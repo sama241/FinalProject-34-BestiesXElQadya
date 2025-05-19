@@ -5,9 +5,10 @@ metadata:
   labels:
     app: apigateway-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: apigateway-service
   ports:
     - port: 80
       targetPort: 8761
+      nodePort: 30001

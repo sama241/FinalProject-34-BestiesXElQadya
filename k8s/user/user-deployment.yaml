@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: your-docker-image:latest  # Replace with your actual Docker image
+          image: semo24/user-service:latest  # Replace with your actual Docker image
           ports:
             - containerPort: 8081
           env:
