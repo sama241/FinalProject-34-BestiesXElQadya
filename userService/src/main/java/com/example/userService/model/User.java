@@ -10,7 +10,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
     private String username;
     private String name;
@@ -32,7 +32,7 @@ public class User {
 
     // Constructor without ID (ID is auto-generated)
     public User(String username, String name, String password, String email, String phone, String address) {
-        //this.id = generateRandomId();
+        this.id = generateRandomId();
         this.username = username;
         this.name = name;
         this.password = password;
