@@ -1,13 +1,12 @@
 package com.example.userService.service;
 
+
 import com.example.userService.model.Favorite;
 import com.example.userService.model.User;
 import com.example.userService.repository.UserRepository;
-import com.example.userService.repository.FavoriteRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.userService.repository.FavoriteRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,8 +15,6 @@ import java.util.UUID;
 
 @Service
 public class UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -31,14 +28,12 @@ public class UserService {
 
     //get all
     public List<User> getUsers() {
-        logger.info("Fetching all users");
         return userRepository.findAll();
     }
 
     // get by username
     public Optional<User> findByUsername(String username) {
-        logger.info("Fetching user by username: {}", username);
-        return userRepository.findByUsername(username);
+            return userRepository.findByUsername(username);
     }
 
     // get by email
@@ -46,45 +41,119 @@ public class UserService {
 
     // Create a new User
     public User createUser(User user) {
-        logger.info("Creating new user with username: {}", user.getUsername());
         return userRepository.save(user);
     }
 
     // Get a User by ID
-    public User getUserById(UUID userId) {
-        logger.info("Fetching user by ID: {}", userId);
-        return userRepository.findById(userId).orElseThrow(() -> {
-            logger.error("User not found with ID: {}", userId);
-            return new RuntimeException("User not found");
-        });
+    public User getUserById(String userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     // get by username
     public Optional<User> getByUsername(String username) {
-        logger.info("Getting user by username: {}", username);
         return userRepository.findByUsername(username);
     }
 
     // get by email
     public User getByEmail(String email) {
-        logger.info("Getting user by email: {}", email);
         return userRepository.findByEmail(email).orElse(null);
     }
 
 
     // get by phone
     public Optional<User> getByPhone(String phone) {
-        logger.info("Getting user by phone: {}", phone);
         return userRepository.findByPhone(phone);
     }
-    public boolean existsByUserId(UUID userId) {
+
+
+    public boolean existsByUserId(String userId) {
         return userRepository.existsById(userId);
     }
 
     // Update User details
     // say if we update haga haga mesh kolo?
-    public User updateUser(UUID userId, User userDetails) {
-        logger.info("Updating user with ID: {}", userId);
+//<<<<<<< HEAD
+// Update User details (partial update: only non-null fields are updated)
+    public User updateUsername(String userId, String username) {
+        User user = getUserById(userId);
+        user.setUsername(username);
+        return userRepository.save(user);
+    }
+
+    public User updateName(String userId, String name) {
+        User user = getUserById(userId);
+        user.setName(name);
+        return userRepository.save(user);
+    }
+
+    public User updatePassword(String userId, String password) {
+        User user = getUserById(userId);
+        user.setPassword(password);
+        return userRepository.save(user);
+    }
+
+    public User updateEmail(String userId, String email) {
+        User user = getUserById(userId);
+        user.setEmail(email);
+        return userRepository.save(user);
+    }
+
+    public User updatePhone(String userId, String phone) {
+        User user = getUserById(userId);
+        user.setPhone(phone);
+        return userRepository.save(user);
+    }
+
+    public User updateAddress(String userId, String address) {
+        User user = getUserById(userId);
+        user.setAddress(address);
+        return userRepository.save(user);
+    }
+
+    // Update a user (re-save it)
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+//    public User updateUser(UUID id, User updatedUser) {
+//        Optional<User> optionalUser = userRepository.findById(id);
+//
+//        if (optionalUser.isPresent()) {
+//            User existingUser = optionalUser.get();
+//
+//            if (updatedUser.getUsername() != null) {
+//                existingUser.setUsername(updatedUser.getUsername());
+//            }
+//
+//            if (updatedUser.getName() != null) {
+//                existingUser.setName(updatedUser.getName());
+//            }
+//
+//            if (updatedUser.getPassword() != null) {
+//                existingUser.setPassword(updatedUser.getPassword());
+//            }
+//
+//            if (updatedUser.getEmail() != null) {
+//                existingUser.setEmail(updatedUser.getEmail());
+//            }
+//
+//            if (updatedUser.getPhone() != null) {
+//                existingUser.setPhone(updatedUser.getPhone());
+//            }
+//
+//            if (updatedUser.getAddress() != null) {
+//                existingUser.setAddress(updatedUser.getAddress());
+//            }
+//
+//            return userRepository.save(existingUser);
+//        } else {
+//            throw new RuntimeException("User with ID " + id + " not found");
+//        }
+//    }
+
+//=======
+    public User updateUser(String userId, User userDetails) {
+        // Fetch the existing user
         User user = getUserById(userId);
 
         // Check and update each field only if the new value is not null
@@ -116,17 +185,19 @@ public class UserService {
         return userRepository.save(user);
     }
 
+//>>>>>>> 2abc34bb5f29b5025310d8d7ca41d71ca75b8b04
 
     // Delete User by ID
-    public void deleteUser(UUID userId) {
-        logger.info("Deleting user with ID: {}", userId);
+    public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
 
     // Favorite Worker Functions
     // Add a worker to the user's favorites list
 //    public void addFavoriteWorker(UUID userId, UUID workerId) {
-
+////        if (favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
+////            throw new RuntimeException("Worker is already in your favorites list.");
+////        }
 //        System.out.print(userId);
 //        System.out.print(workerId);
 //
@@ -137,10 +208,7 @@ public class UserService {
 
     @Transactional
     public Favorite addFavoriteWorker(Favorite favorite) {
-        logger.info("Adding favorite worker {} for user {}", favorite.getWorkerId(), favorite.getUserId());
-
         if (favoriteRepository.existsByUserIdAndWorkerId(favorite.getUserId(), favorite.getWorkerId())) {
-            logger.warn("Worker {} is already in the favorites list for user {}", favorite.getWorkerId(), favorite.getUserId());
             return null;
         }
 
@@ -150,11 +218,8 @@ public class UserService {
 
     // Remove a worker from the user's favorites list
     @Transactional
-    public String removeFavoriteWorker(UUID userId, String workerId) {
-        logger.info("Removing favorite worker {} for user {}", workerId, userId);
-
+    public String removeFavoriteWorker(String userId, String workerId) {
         if (!favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
-            logger.warn("Favorite worker not found for user {} and worker {}", userId, workerId);
             return "Favorite worker not found.";
         }
 
@@ -163,8 +228,7 @@ public class UserService {
     }
 
     // Get the list of favorite workers for a user
-    public List<Favorite> getFavoriteWorkers(UUID userId) {
-        logger.info("Getting favorite workers for user {}", userId);
+    public List<Favorite> getFavoriteWorkers(String userId) {
         return favoriteRepository.findByUserId(userId);
     }
 }

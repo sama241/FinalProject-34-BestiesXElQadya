@@ -43,28 +43,31 @@ public class UserController {
         this.userProducer = userProducer;
     }
 
-    // get all
-    @GetMapping
-    public List<User> getUsers() {
-        return userService.getUsers();
-    }
 
+    // ------------ PUBLIC ROUTES ---------------------------
     // Create a new User
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User createdUser = userService.createUser(user);
         return ResponseEntity.ok(createdUser);
     }
 
+    // get all
+    @GetMapping("/get/all")
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
+
     // Get User by ID
-    @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable UUID userId) {
+    @GetMapping("/get/{userId}")
+    public ResponseEntity<User> getUser(@PathVariable String userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 
     // Get User by Username
-    @GetMapping("/username/{username}")
+    @GetMapping("/get/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> optionalUser = userService.getByUsername(username);
 
@@ -76,7 +79,7 @@ public class UserController {
     }
 
     // Get User by Email
-    @GetMapping("/email/{email}")
+    @GetMapping("/get/email/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
         User optionalUser = userService.getByEmail(email);
 
@@ -88,7 +91,7 @@ public class UserController {
     }
 
     // Get User by Phone
-    @GetMapping("/phone/{phone}")
+    @GetMapping("/get/phone/{phone}")
     public ResponseEntity<User> getUserByPhone(@PathVariable String phone) {
         Optional<User> optionalUser = userService.getByPhone(phone);
 
@@ -99,9 +102,11 @@ public class UserController {
         }
     }
 
+    // ------------ PRIVATE ROUTES [ NEEDS LOGIN ] ---------------------------
+
     // Update User details
-    @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable UUID userId, @RequestBody User user) {
+    @PutMapping("/update")
+    public ResponseEntity<User> updateUser(@RequestHeader("X-User-Id") String userId, @RequestBody User user) {
 
 
         User updatedUser = userService.updateUser(userId, user);
@@ -109,11 +114,11 @@ public class UserController {
     }
 
     // Delete User by ID
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") String userId) {
 
         userService.deleteUser(userId);
-        userProducer.sendDeleteToReview(userId+"");
+        userProducer.sendDeleteToReview(userId);
         return ResponseEntity.ok().build();
     }
 
@@ -132,8 +137,9 @@ public class UserController {
 //        return ResponseEntity.status(HttpStatus.CREATED).body("Favorite worker added successfully.");
 //    }
 
-    @PostMapping("/{userId}/favorites")
-    public ResponseEntity<String> addFavoriteWorker(@PathVariable UUID userId, @RequestBody Map<String, String> body , HttpSession session) {
+
+    @PostMapping("/addfavorites")
+    public ResponseEntity<String> addFavoriteWorker(@RequestHeader("X-User-Id") String userId, @RequestBody Map<String, String> body , HttpSession session) {
         session.getAttributeNames().asIterator().forEachRemaining(name -> {
             System.out.println(name + " = " + session.getAttribute(name));
             System.out.println(session.getId());
@@ -177,12 +183,10 @@ public class UserController {
 
 
 
-
     // Remove Worker from Favorites
-    @DeleteMapping("/favorites")
-    public ResponseEntity<String> removeFavoriteWorker(@RequestBody Favorite favorite) {
-        String workerId = favorite.getWorkerId();
-        UUID userId = favorite.getUserId();
+    @DeleteMapping("/deletefavorites")
+    public ResponseEntity<String> removeFavoriteWorker(@RequestHeader("X-User-Id") String userId,  @RequestBody Map<String, String> body) {
+        String workerId = body.get("workerId");
         System.out.println("the user is " + userId);
         System.out.println("the worker is " + workerId);
 
@@ -199,9 +203,9 @@ public class UserController {
     //the error is hereeeeeeeee
     @GetMapping("/favorites")
     public ResponseEntity<List<Map<String, Object>>> getFavoriteWorkers(
-            @RequestHeader("X-User-Id") UUID id) {
+            @RequestHeader("X-User-Id") String id) {
 
-      System.out.println("the user is " + id);
+
         List<Favorite> favorites = userService.getFavoriteWorkers(id);
 
         List<Map<String, Object>> favoriteWorkersInfo = new ArrayList<>();
@@ -215,47 +219,17 @@ public class UserController {
         return ResponseEntity.ok(favoriteWorkersInfo);
     }
 
-
-
-    @GetMapping("/{userId}/bookings")
-    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@PathVariable String userId) {
+    @GetMapping("/bookings")
+    public ResponseEntity<List<Map<String, Object>>>  getUserBookings(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = bookingClient.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/{userId}/reviews")
-    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@PathVariable String userId) {
+    @GetMapping("/reviews")
+    public ResponseEntity<List<Map<String, Object>>> getReviewsByUserId(@RequestHeader("X-User-Id") String userId) {
         List<Map<String, Object>>  bookings = reviewClient.getReviewsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
-
-    @GetMapping("/session")
-    public String getUserBySession(HttpSession session) {
-            // Retrieve session ID
-            String sessionId = session.getId();
-
-//            // Check if the user is active
-//            boolean isActive = userSessionManager.isUserActive(sessionId);
-//
-//            if (!isActive) {
-//                return null;
-//            }
-
-            // Get the user ID from the active session
-            String userId = userSessionManager.getUserIdBySession(sessionId);
-
-
-
-            return userId;  // Successfully return the user details
-
-    }
-
-
-
-
-
-
-
 
 
 }
