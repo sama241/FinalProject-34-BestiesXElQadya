@@ -17,8 +17,8 @@ services:
   search-service:
     build: .
     container_name: search_service
-    depends_on:
-      - search-db
+#    depends_on:
+#      - search-db
     ports:
       - "8085:8085"
     environment:
