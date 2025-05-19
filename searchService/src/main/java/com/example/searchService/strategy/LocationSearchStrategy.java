@@ -40,6 +40,7 @@ public class LocationSearchStrategy implements SearchStrategy {
         List<Map<String, Object>> filteredWorkers = new ArrayList<>();
         for (Map<String, Object> worker : workers) {
             if (worker.get("location") != null && worker.get("location").equals(request.getLocation())) {
+                worker.remove("password");
                 filteredWorkers.add(worker);
             }
         }

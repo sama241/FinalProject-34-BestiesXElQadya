@@ -39,6 +39,7 @@ public class CategorySearchStrategy implements SearchStrategy {
         List<Map<String, Object>> filteredWorkers = new ArrayList<>();
         for (Map<String, Object> worker : workers) {
             if (worker.get("profession") != null && worker.get("profession").equals(request.getCategory())) {
+                worker.remove("password");
                 filteredWorkers.add(worker);
             }
         }

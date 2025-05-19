@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -32,26 +30,22 @@ public class AvailabilitySearchStrategy implements SearchStrategy {
         Object cachedResult = redisTemplate.opsForValue().get(key);
 
         if (cachedResult != null) {
-            // Return cached result if available
             return (List<Map<String, Object>>) cachedResult;
         }
 
-        // If no cached result, query the database
-        Query query = new Query();
-        query.addCriteria(Criteria.where("isAvailable").is(request.isAvailable()));
         List<Map<String, Object>> workers = workerClient.getWorkers();
-
-        // Filter workers based on availability
         List<Map<String, Object>> filteredWorkers = new ArrayList<>();
-        for (Map<String, Object> worker : workers) {
-            if (worker.get("isAvailable") != null && worker.get("isAvailable").equals(request.isAvailable())) {
-                filteredWorkers.add(worker);
+
+        if (workers != null) {
+            for (Map<String, Object> worker : workers) {
+                if (worker.get("available") != null && worker.get("available").equals(request.isAvailable())) {
+                    worker.remove("password");
+                    filteredWorkers.add(worker);
+                }
             }
         }
 
-        // Cache the result for future use
         redisTemplate.opsForValue().set(key, filteredWorkers, 10, TimeUnit.MINUTES);
-
         return filteredWorkers;
     }
 }

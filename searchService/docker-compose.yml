@@ -1,38 +1,29 @@
 version: '3.8'
 
 services:
-#  search-db:
-#    image: postgres:15
-#    container_name: search_postgres
-#    restart: always
-#    environment:
-#      POSTGRES_DB: search_db
-#      POSTGRES_USER: search_user
-#      POSTGRES_PASSWORD: search_pass
-#    ports:
-#      - "5433:5432"
-#    volumes:
-#      - search_pgdata:/var/lib/postgresql/data
+
+  search-redis:
+    image: redis:7
+    container_name: search_redis
+    restart: always
+    ports:
+      - "6380:6379"  # Host:Container
+    networks:
+      - connection
 
   search-service:
     build: .
     container_name: search_service
-#    depends_on:
-#      - search-db
     ports:
       - "8085:8085"
+    depends_on:
+      - search-redis
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://search-db:5432/search_db
-      SPRING_DATASOURCE_USERNAME: search_user
-      SPRING_DATASOURCE_PASSWORD: search_pass
       SPRING_REDIS_HOST: search-redis
-      SPRING_REDIS_PORT: 6379
-      SPRING_WORKER_SERVICE_URL: http://worker-service:8082  # Update this
+      SPRING_REDIS_PORT: 6379  # Redis port inside container
+      SPRING_WORKER_SERVICE_URL: http://worker-service:8082
     networks:
       - connection
-
-volumes:
-  search_pgdata:
 
 networks:
   connection:
