@@ -9,8 +9,10 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Column(name = "id", nullable = false, updatable = false)
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private String id;
     private String username;
     private String name;

@@ -36,6 +36,10 @@ spring:
             - Path=/search/**
 server:
   port: 8761
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
 
 
 spring.session.store-type: redis
