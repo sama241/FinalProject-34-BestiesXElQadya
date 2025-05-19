@@ -13,4 +13,3 @@ public interface WorkerClient {
     String removeTimeSlot(@PathVariable("workerId") String workerId, @RequestParam("hour") int hour);
 }
 
-
