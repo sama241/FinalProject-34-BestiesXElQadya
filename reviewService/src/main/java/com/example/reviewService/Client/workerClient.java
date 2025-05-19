@@ -12,7 +12,7 @@ public interface workerClient {
     // This endpoint will be used to update the worker's average rating
     @PutMapping("/{workerId}/average-rating")
      void updateAverageRating(@PathVariable String workerId, @RequestBody double rating);
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     ResponseEntity<?> getWorker(@PathVariable("id") String workerId);  // Match exactly with your controller
 
 }

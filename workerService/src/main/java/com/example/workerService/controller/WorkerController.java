@@ -52,12 +52,12 @@ public class WorkerController {
         return workerService.saveWorker(worker);
     }
 
-    @GetMapping
+    @GetMapping("/get/all")
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
         if (worker == null) {

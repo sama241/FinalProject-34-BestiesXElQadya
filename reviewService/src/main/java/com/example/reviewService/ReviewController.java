@@ -39,7 +39,7 @@ public class ReviewController {
     }
 
     // Get a review by its ID
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<Review> getReviewById(@PathVariable String id) {
         Optional<Review> review = reviewService.getReviewById(id);
         return review.map(ResponseEntity::ok)
@@ -64,7 +64,7 @@ public class ReviewController {
     }
 
     // Update a review (optional: same endpoint as create but different HTTP method)
-    @PutMapping("/{id}")
+    @PutMapping("/user/{id}")
     public ResponseEntity<Review> updateReview(@PathVariable String id, @RequestBody Review updatedReview) {
         Optional<Review> existingReviewOptional = reviewService.getReviewById(id);
 
@@ -100,14 +100,14 @@ public class ReviewController {
     }
 
     // Delete a review by ID
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/user/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable String id) {
         reviewService.deleteReviewById(id);
         return ResponseEntity.noContent().build();
     }
 
     // Endpoint to mark a review as helpful
-    @PutMapping("/{reviewId}/helpful")
+    @PutMapping("/user/{reviewId}/helpful")
     public ResponseEntity<Review> markReviewAsHelpful(@PathVariable String reviewId) {
         try {
             Review updatedReview = reviewService.markReviewAsHelpful(reviewId);  // Increment helpful votes
@@ -118,8 +118,14 @@ public class ReviewController {
     }
 
     // Get the average rating for a worker
-    @GetMapping("/worker/{workerId}/average-rating")
-    public ResponseEntity<Double> getAverageRating(@PathVariable String workerId) {
+    @GetMapping("/user/average-rating")
+    public ResponseEntity<Double> getAverageRatingForUser(@RequestHeader("X-User-Id") String userId,@RequestParam String workerId) {
+        double averageRating = reviewService.calculateAverageRating(workerId);  // Calculate the average rating
+        return ResponseEntity.ok(averageRating);  // Return the average rating in the response
+    }
+
+    @GetMapping("/worker/average-rating")
+    public ResponseEntity<Double> getAverageRatingForWorker(@RequestHeader("X-Worker-Id") String workerId) {
         double averageRating = reviewService.calculateAverageRating(workerId);  // Calculate the average rating
         return ResponseEntity.ok(averageRating);  // Return the average rating in the response
     }
@@ -128,8 +134,9 @@ public class ReviewController {
     @GetMapping("/worker/findbyworker/findbyuser") //hattghyr
     public ResponseEntity<List<Review>> getReviewsByWorkerAndUser(
             @RequestHeader("X-Worker-Id")  String workerId,
-            @RequestBody String userId) {
-        System.out.println("WorkerId: " + workerId + ", UserId: " + userId);
+            @RequestParam String userId) {
+
+        System.out.println("WorkerId aanna : " + workerId + ", UserId: " + userId);
         List<Review> reviews = reviewService.getReviewsByWorkerIdAndUserId(workerId, userId);
 
         if (reviews.isEmpty()) {

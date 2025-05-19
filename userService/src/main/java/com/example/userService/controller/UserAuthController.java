@@ -1,6 +1,5 @@
 package com.example.userService.controller;
 
-
 import com.example.userService.command.Command;
 import com.example.userService.command.LoginCommand;
 import com.example.userService.command.LogoutCommand;
@@ -10,10 +9,12 @@ import com.example.userService.singleton.UserSessionManager;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -21,29 +22,39 @@ import java.util.Set;
 public class UserAuthController {
 
     @Autowired
-    private  StringRedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
-    private  UserService userService;
+    private UserService userService;
 
-//    @Autowired
-//    public UserAuthController(StringRedisTemplate redisTemplate, UserService userService) {
-//        this.redisTemplate = redisTemplate;
-//        this.userService = userService;
-//    }
     @PostMapping("/login")
-    public String login(@RequestBody  User loginRequest , HttpSession session) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody User loginRequest, HttpSession session) {
         User user = userService.getByEmail(loginRequest.getEmail());
 
         if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
             UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
             Command loginCommand = new LoginCommand(user.getId(), session, sessionManager);
-            return loginCommand.execute();
+            String response = loginCommand.execute();
+
+            // Add the session ID and user ID to activeUsers
+            String sessionId = session.getId();
+            sessionManager.addActiveUser(user.getId(), sessionId);
+            System.out.println("User " + user.getId() + " logged in with session " + sessionId);
+
+            // Prepare the response
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("sessionId", sessionId);
+            responseBody.put("userId", user.getId());
+            responseBody.put("message", response);
+
+            return ResponseEntity.ok(responseBody);
         } else {
-            return "Invalid credentials!";
+            // Prepare the error response
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Invalid credentials!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
-
 
 
     @PostMapping("/logout")
@@ -53,10 +64,23 @@ public class UserAuthController {
         return logoutCommand.execute();
     }
 
-//    @GetMapping("/active-sessions")
-//    public Set<Object> getActiveSessions() {
-//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
-//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
-//        return activeSessions;
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<String> validateSession(@RequestParam String sessionId) {
+        // Check if the session ID exists in the activeUsers hash
+        String userId = (String) redisTemplate.opsForHash().entries("activeUsers").entrySet().stream()
+                .filter(entry -> entry.getKey().equals(sessionId))
+                .map(entry -> (String) entry.getValue())
+                .findFirst()
+                .orElse(null);
+
+        if (userId != null) {
+            return ResponseEntity.ok(userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is invalid or expired");
+        }
+    }
+
+
+
+
 }
