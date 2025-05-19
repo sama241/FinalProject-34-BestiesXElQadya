@@ -46,18 +46,19 @@ public class WorkerController {
                 workerRequest.getPassword(),
                 workerRequest.getProfession(),
                 workerRequest.getSkills(),
-                workerRequest.getAvailableHours()
+                workerRequest.getAvailableHours(),
+                workerRequest.getLocation()
         );
 
         return workerService.saveWorker(worker);
     }
 
-    @GetMapping
+    @GetMapping("/get/all")
     public List<Worker> getAllWorkers() {
         return workerRepository.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getWorker(@PathVariable String id) {
         Worker worker = workerService.getWorkerById(id);
         if (worker == null) {
@@ -68,9 +69,6 @@ public class WorkerController {
 
     @PutMapping("/update")
     public Worker updateWorker(@RequestHeader("X-Worker-Id") String workerId, @RequestBody Worker updatedWorker) {
-
-
-
         // 🔍 Find the existing worker
         Optional<Worker> optional = workerRepository.findById(workerId);
         if (optional.isPresent()) {
@@ -155,7 +153,7 @@ public class WorkerController {
         return ResponseEntity.ok("Worker cached for 10 minutes.");
     }
 
-    @GetMapping("/cache")
+    @GetMapping("/get/cache")
     public ResponseEntity<?> getCachedWorker(@RequestHeader("X-Worker-Id") String workerId) {
         Worker worker = workerService.getCachedWorker(workerId);
         if (worker == null) {
@@ -187,10 +185,21 @@ public class WorkerController {
         }
     }
 
-    @GetMapping("/bookings")
+    @GetMapping("/get/bookings")
     public ResponseEntity<List<Map<String, Object>>> getWorkerBookings(@RequestHeader("X-Worker-Id") String workerId) {
         List<Map<String, Object>> bookings = bookingClient.getBookingsByWorkerId(workerId);
         return ResponseEntity.ok(bookings);
     }
 
+
+    @PutMapping("/{workerId}/average-rating")
+    public ResponseEntity<?> updateAverageRating(@PathVariable String workerId, @RequestBody double newAverageRating) {
+        return workerRepository.findById(workerId)
+                .map(worker -> {
+                    worker.setAverageRating(newAverageRating);
+                    workerRepository.save(worker);  // ⚠️ MUST save after update!
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Worker not found"));
+    }
 }

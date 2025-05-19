@@ -34,37 +34,32 @@ public class BookingController {
     private BookingDispatcher dispatcher;
 
 
-    @GetMapping
+    @GetMapping("/get/all")
     public List<Booking> getAll() {
 
         return bookingService.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public Booking getById(@PathVariable Long id) {
 
         return bookingRepository.findById(id).orElseThrow();
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(@RequestHeader("X-User-Id") String userId) {
+    @GetMapping("/get/user/{userId}")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable String userId) {
 
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/worker/{workerId}")
-    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
 
-        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
-        return ResponseEntity.ok(bookings);
-    }
-
-    @PostMapping("/create")
+    @PostMapping("/user/create")
     public ResponseEntity<?> create(@RequestBody Booking booking, @RequestHeader("X-User-Id") String userId) {
 
 
         int hour = booking.getTimeslot().getHour();
+        System.out.println("HOUR"+hour);
         String result = workerClient.removeTimeSlot(booking.getWorkerId(), hour);
 
         if (!result.toLowerCase().contains("success")) {
@@ -76,8 +71,8 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.save(booking));
     }
 
-    @PutMapping("/{id}/reschedule")
-    public ResponseEntity<?> rescheduleBooking(@PathVariable Long id, @RequestParam String newTime) {
+    @PutMapping("/user/{id}/reschedule")
+    public ResponseEntity<?> rescheduleBooking(@RequestHeader("X-User-Id") String userId, @PathVariable Long id, @RequestParam String newTime) {
 
 
         Booking booking = bookingService.findById(id);
@@ -88,8 +83,8 @@ public class BookingController {
         return ResponseEntity.ok("Booking rescheduled successfully");
     }
 
-    @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+    @PutMapping("/user/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(@RequestHeader("X-User-Id") String userId, @PathVariable Long id) {
 
 
         Booking booking = bookingService.findById(id);
@@ -99,20 +94,30 @@ public class BookingController {
         return ResponseEntity.ok("Booking cancelled successfully");
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/user/{id}/update")
     public Booking update(@PathVariable Long id, @RequestBody Booking booking) {
 
         booking.setId(id);
         return bookingRepository.save(booking);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/user/{id}/delete")
     public void delete(@PathVariable Long id) {
+        Booking booking = bookingService.findById(id);
+        if(booking.getStatus() == BookingStatus.CANCELLED) {
+            bookingRepository.deleteById(id);
+        }
 
-        bookingRepository.deleteById(id);
     }
 
-    @PutMapping("/{id}/status")
+    @GetMapping("/get/worker/{workerId}")
+    public ResponseEntity<List<Booking>> getBookingsByWorkerId(@PathVariable String workerId) {
+
+        List<Booking> bookings = bookingService.getBookingsByWorkerId(workerId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @PutMapping("/worker/{id}/status")
     public ResponseEntity<?> updateBookingStatus(@PathVariable Long id) {
 
         Booking booking = bookingService.findById(id);
