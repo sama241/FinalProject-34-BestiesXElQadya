@@ -22,23 +22,22 @@ public class WorkerAuthController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(
-            @RequestParam String email,
-            @RequestParam String password,
+            @RequestBody Map<String, String> loginRequest,
             HttpSession session) {
+
+        String email = loginRequest.get("email");
+        String password = loginRequest.get("password");
 
         Worker worker = workerRepository.findByEmail(email);
 
         if (worker != null && worker.getPassword().equals(password)) {
-            // Store worker ID and session ID in Redis
             String workerId = worker.getId();
             String sessionId = session.getId();
 
-            // Store the active worker in Redis
+            // Store session info in Redis
             redisTemplate.opsForHash().put("activeWorkers", workerId, sessionId);
-
-            // Set worker ID in the session for easy access
             session.setAttribute("workerId", workerId);
 
             Map<String, String> response = new HashMap<>();
@@ -48,9 +47,11 @@ public class WorkerAuthController {
 
             return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials!"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("message", "Invalid credentials!"));
         }
     }
+
 
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {
