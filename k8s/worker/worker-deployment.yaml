@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: worker-service
-          image: your-dockerhub-username/worker-service:latest # to be added
+          image: rawanehab02/worker-service:latest # to be added
           ports:
             - containerPort: 8082
           env:

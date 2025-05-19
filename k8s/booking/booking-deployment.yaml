@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: booking-service
-          image: your-dockerhub-username/booking-service:latest #to be added
+          image: rawanehab02/booking-service:latest #to be added
           ports:
             - containerPort: 8083
           env:

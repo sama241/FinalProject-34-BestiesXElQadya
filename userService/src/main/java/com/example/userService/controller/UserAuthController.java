@@ -52,11 +52,26 @@ public class UserAuthController {
         Command logoutCommand = new LogoutCommand(session, sessionManager);
         return logoutCommand.execute();
     }
-
 //    @GetMapping("/active-sessions")
-//    public Set<Object> getActiveSessions() {
-//        Set<Object> activeSessions = UserSessionManager.getInstance(redisTemplate).getAllActiveUsers();
-//        System.out.println("Active Sessions: " + activeSessions);  // Logs active sessions
-//        return activeSessions;
+//    public Object getActiveSessions(HttpSession session) {
+//        Object userId = session.getAttribute("userId");
+//        String sessionId = session.getId();
+//
+//        if (userId == null) {
+//            return "Unauthorized: No user ID in session.";
+//        }
+//
+//        UserSessionManager sessionManager = UserSessionManager.getInstance(redisTemplate);
+//
+//        // Validate: is the sessionId associated with that userId?
+//        String storedUserId = sessionManager.getUserIdBySession(sessionId);
+//        if (storedUserId == null || !storedUserId.equals(userId.toString())) {
+//            return "Unauthorized: Invalid or expired session.";
+//        }
+//
+//        // Authorized → return all active sessions
+//        return sessionManager.getAllActiveUsers(); // This returns a Map<sessionId, userId>
 //    }
+
+
 }
