@@ -1,7 +1,5 @@
 package com.example.userService.model;
 
-
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -12,8 +10,8 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)  // Auto-generate UUID for User ID
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
     private String username;
     private String name;
     private String password;
@@ -21,9 +19,10 @@ public class User {
     private String phone;
     private String address;
 
-    public User(String username, UUID id, String name, String password, String email, String phone, String address) {
+    // Constructor with all fields
+    public User(String username, String id, String name, String password, String email, String phone, String address) {
         this.username = username;
-        this.id = id;
+        this.id = id != null ? id : generateRandomId();
         this.name = name;
         this.password = password;
         this.email = email;
@@ -31,11 +30,9 @@ public class User {
         this.address = address;
     }
 
-
-    // tab wel id?
-
+    // Constructor without ID (ID is auto-generated)
     public User(String username, String name, String password, String email, String phone, String address) {
-        this.id = UUID.randomUUID();
+        //this.id = generateRandomId();
         this.username = username;
         this.name = name;
         this.password = password;
@@ -44,19 +41,24 @@ public class User {
         this.address = address;
     }
 
-    // tab wel id?
-
+    // Constructor for username and password only
     public User(String username, String password) {
-        this.id = UUID.randomUUID();
+        this.id = generateRandomId();
         this.username = username;
         this.password = password;
     }
 
-
-
+    // Default constructor
     public User() {
+        this.id = generateRandomId();
     }
 
+    // Generate random alphanumeric ID (12 characters)
+    private String generateRandomId() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    }
+
+    // Getters and Setters
     public String getPassword() {
         return password;
     }
@@ -81,7 +83,7 @@ public class User {
         return username;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
@@ -109,7 +111,7 @@ public class User {
         this.address = address;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 }

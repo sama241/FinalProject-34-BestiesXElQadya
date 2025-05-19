@@ -20,7 +20,7 @@ public class Review {
 
     private int rating;
     private String comment;
-    private boolean isAnonymous;
+    private Boolean isAnonymous;
     private int helpfulVotes = 0;
 
 
@@ -56,9 +56,6 @@ public class Review {
         this.comment = comment;
     }
 
-    public void setIsAnonymous(boolean anonymous) {
-        isAnonymous = anonymous;
-    }
 
     public Review() {}
 
@@ -92,8 +89,12 @@ public class Review {
         return comment;
     }
 
-    public boolean getIsAnonymous() {
+    public Boolean getIsAnonymous() {
         return isAnonymous;
+    }
+
+    public void setAnonymous(Boolean anonymous) {
+        isAnonymous = anonymous;
     }
 
     @Override

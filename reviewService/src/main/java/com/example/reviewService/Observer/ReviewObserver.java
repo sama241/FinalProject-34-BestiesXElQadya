@@ -1,9 +1,7 @@
 package com.example.reviewService.Observer;
 
 import com.example.reviewService.event.ReviewEvent;
-import com.example.reviewService.model.Review;
-
+import com.example.reviewService.rabbitmq.ReviewProducer;
 public interface ReviewObserver {
-    void update(ReviewEvent event);
-
+    void update(int averageRating);
 }

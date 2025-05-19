@@ -45,7 +45,7 @@ public class UserService {
     }
 
     // Get a User by ID
-    public User getUserById(UUID userId) {
+    public User getUserById(String userId) {
         return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
@@ -66,7 +66,7 @@ public class UserService {
     }
 
 
-    public boolean existsByUserId(UUID userId) {
+    public boolean existsByUserId(String userId) {
         return userRepository.existsById(userId);
     }
 
@@ -74,37 +74,37 @@ public class UserService {
     // say if we update haga haga mesh kolo?
 //<<<<<<< HEAD
 // Update User details (partial update: only non-null fields are updated)
-    public User updateUsername(UUID userId, String username) {
+    public User updateUsername(String userId, String username) {
         User user = getUserById(userId);
         user.setUsername(username);
         return userRepository.save(user);
     }
 
-    public User updateName(UUID userId, String name) {
+    public User updateName(String userId, String name) {
         User user = getUserById(userId);
         user.setName(name);
         return userRepository.save(user);
     }
 
-    public User updatePassword(UUID userId, String password) {
+    public User updatePassword(String userId, String password) {
         User user = getUserById(userId);
         user.setPassword(password);
         return userRepository.save(user);
     }
 
-    public User updateEmail(UUID userId, String email) {
+    public User updateEmail(String userId, String email) {
         User user = getUserById(userId);
         user.setEmail(email);
         return userRepository.save(user);
     }
 
-    public User updatePhone(UUID userId, String phone) {
+    public User updatePhone(String userId, String phone) {
         User user = getUserById(userId);
         user.setPhone(phone);
         return userRepository.save(user);
     }
 
-    public User updateAddress(UUID userId, String address) {
+    public User updateAddress(String userId, String address) {
         User user = getUserById(userId);
         user.setAddress(address);
         return userRepository.save(user);
@@ -152,7 +152,7 @@ public class UserService {
 //    }
 
 //=======
-    public User updateUser(UUID userId, User userDetails) {
+    public User updateUser(String userId, User userDetails) {
         // Fetch the existing user
         User user = getUserById(userId);
 
@@ -188,7 +188,7 @@ public class UserService {
 //>>>>>>> 2abc34bb5f29b5025310d8d7ca41d71ca75b8b04
 
     // Delete User by ID
-    public void deleteUser(UUID userId) {
+    public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
 
@@ -218,7 +218,7 @@ public class UserService {
 
     // Remove a worker from the user's favorites list
     @Transactional
-    public String removeFavoriteWorker(UUID userId, String workerId) {
+    public String removeFavoriteWorker(String userId, String workerId) {
         if (!favoriteRepository.existsByUserIdAndWorkerId(userId, workerId)) {
             return "Favorite worker not found.";
         }
@@ -228,7 +228,7 @@ public class UserService {
     }
 
     // Get the list of favorite workers for a user
-    public List<Favorite> getFavoriteWorkers(UUID userId) {
+    public List<Favorite> getFavoriteWorkers(String userId) {
         return favoriteRepository.findByUserId(userId);
     }
 }

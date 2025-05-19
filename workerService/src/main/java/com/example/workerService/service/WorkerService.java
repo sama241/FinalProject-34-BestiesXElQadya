@@ -129,7 +129,17 @@ public class WorkerService {
     }
 
 
+    public boolean updateAverageRating(String workerId, double newRating) {
+        Optional<Worker> optional = workerRepository.findById(workerId);
+        if (optional.isEmpty()) {
+            return false;
+        }
 
+        Worker worker = optional.get();
+        worker.setAverageRating(newRating);
+        workerRepository.save(worker);
+        return true;
+    }
 
 
 }

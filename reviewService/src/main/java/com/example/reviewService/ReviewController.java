@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @RequestMapping("/reviews")
 @RestController
-
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -23,13 +22,13 @@ public class ReviewController {
     // Create a new review
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+    @PostMapping("/user")
+    public ResponseEntity<Review> createReview(@RequestHeader("X-User-Id") String userId ,@RequestBody Review review) {
 
         // Create and save the review using the service
         Review savedReview = reviewService.createReview(
                 review.getWorkerId(),
-                review.getUserId(),
+                userId,
                 review.getRating(),
                 review.getComment(),
                 review.getIsAnonymous()
@@ -48,15 +47,18 @@ public class ReviewController {
     }
 
     // Get all reviews for a specific worker
-    @GetMapping("/worker/{workerId}")
-    public ResponseEntity<List<Review>> getReviewsByWorkerId(@PathVariable String workerId) {
+    @GetMapping("/worker")  //hatghyr
+    public ResponseEntity<List<Review>> getReviewsByWorkerId(@RequestHeader("X-Worker-Id") String workerId) {
         List<Review> reviews = reviewService.getReviewsByWorkerId(workerId);
         return ResponseEntity.ok(reviews);
     }
 
+
     // Get all reviews made by a specific user (optional)
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getReviewsByUserId(@PathVariable String userId) {
+    @GetMapping("/user") // di hattghyr
+
+
+    public ResponseEntity<List<Review>> getReviewsByUserId(@RequestHeader("X-User-Id") String userId) {
         List<Review> reviews = reviewService.getReviewsByUserId(userId);
         return ResponseEntity.ok(reviews);
     }
@@ -83,8 +85,8 @@ public class ReviewController {
             if (updatedReview.getComment() != null) {
                 existingReview.setComment(updatedReview.getComment());
             }
-            if (updatedReview.getIsAnonymous() != existingReview.getIsAnonymous()) {
-                existingReview.setIsAnonymous(updatedReview.getIsAnonymous());
+            if (updatedReview.getIsAnonymous() != null) {
+                existingReview.setAnonymous(updatedReview.getIsAnonymous());
             }
 
             // Save the updated review
@@ -123,10 +125,10 @@ public class ReviewController {
     }
 
     // ana worker w badwr bl user id maynf3sh yetl3ly el reviews el annoynoums el hwa 3amelha
-    @GetMapping("/findbyworker/{workerId}/findbyuser/{userId}")
+    @GetMapping("/worker/findbyworker/findbyuser") //hattghyr
     public ResponseEntity<List<Review>> getReviewsByWorkerAndUser(
-            @PathVariable String workerId,
-            @PathVariable String userId) {
+            @RequestHeader("X-Worker-Id")  String workerId,
+            @RequestBody String userId) {
         System.out.println("WorkerId: " + workerId + ", UserId: " + userId);
         List<Review> reviews = reviewService.getReviewsByWorkerIdAndUserId(workerId, userId);
 
@@ -139,9 +141,9 @@ public class ReviewController {
         }
     }
 //ana worker badwr ala kol el reviews el ma3mola 3alaya law review fehom annonymous maynf3sh ashof el userid bta3o
-    @GetMapping("getallreviews/worker/{workerId}")
+    @GetMapping("/worker/getallreviews") //hattghyr
     public ResponseEntity<List<Review>> getReviewsByWorkerIdAndHideAnonymousUser(
-            @PathVariable String workerId) {
+            @RequestHeader("X-Worker-Id") String workerId) {
 
         System.out.println("WorkerId: " + workerId);
         List<Review> reviews = reviewService.getallReviewsByWorkerId(workerId);
@@ -153,10 +155,10 @@ public class ReviewController {
             }
         });
 
-        if (reviews.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
+//        if (reviews.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        } else {
             return ResponseEntity.ok(reviews); // Return reviews with userId hidden for anonymous reviews
-        }
+
     }
 }
