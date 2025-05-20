@@ -35,42 +35,62 @@ spec:
 
             # User Service
             - name: SPRING_CLOUD_GATEWAY_ROUTES_0_ID
-              value: user-service
+              value: user-service1
             - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
               value: http://user-service:8081
             - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
               value: Path=/users/**
 
-            # Worker Service
             - name: SPRING_CLOUD_GATEWAY_ROUTES_1_ID
-              value: worker-service
+              value: user-service2
             - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
-              value: http://worker-service:8082
+              value: http://user-service:8081
             - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+              value: Path=/api/user/auth/**
+
+
+
+            # Worker Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+              value: worker-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+              value: http://worker-service:8082
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
               value: Path=/workers/**
 
+            # Worker Auth Service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+              value: worker-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+              value: http://worker-service:8082
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+              value: Path=/api/worker/auth/**
+
+
+
+
             # Booking Service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
               value: booking-service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
               value: http://booking-service:8083
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
               value: Path=/bookings/**
 
             # Review Service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_ID
               value: review-service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_URI
               value: http://review-service:8084
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0
               value: Path=/reviews/**
 
             # Search Service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_6_ID
               value: search-service
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_6_URI
               value: http://search-service:8085
-            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0
               value: Path=/search/**
 
           resources:
