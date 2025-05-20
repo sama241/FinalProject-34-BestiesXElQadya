@@ -1,5 +1,4 @@
 package com.example.workerService.service;
-import com.example.workerService.cache.WorkerCacheService;
 import com.example.workerService.decorator.BasicWorkerProfile;
 import com.example.workerService.decorator.EmergencyBadge;
 import com.example.workerService.decorator.VerifiedBadge;
@@ -9,6 +8,9 @@ import com.example.workerService.repository.WorkerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -20,22 +22,24 @@ public class WorkerService {
 
     @Autowired
     private WorkerRepository workerRepository;
-    private final WorkerCacheService cacheService;
 
-    @Autowired
-    public WorkerService(WorkerCacheService cacheService) {
-        this.cacheService = cacheService;
+    @Cacheable(value = "worker_cache", key = "#id")
+    public Worker getWorkerById(String id) {
+        logger.info("Cache MISS → loading from DB for worker {}", id);
+        return workerRepository.findById(id).orElse(null);
+    }
+    @CacheEvict(value = "worker_cache", key = "#id")
+    public void deleteCachedWorker(String id) {
+        logger.info("Deleting cached worker {}", id);
+        workerRepository.deleteById(id);
     }
 
-    public void cacheWorker(Worker worker) {
-        logger.info("Caching worker with ID: {}", worker.getId());
-        cacheService.cacheWorker(worker, 1); // TTL = 10 minutes
+    @CachePut(value = "worker_cache", key = "#result.id")
+    public Worker saveWorker(Worker worker) {
+        logger.info("Saving new worker with ID: {}", worker.getId());
+        return workerRepository.save(worker);
     }
 
-    public Worker getCachedWorker(String id) {
-        logger.info("Fetching cached worker with ID: {}", id);
-        return cacheService.getCachedWorker(id);
-    }
     public boolean setWorkingHours(String workerId, List<Integer> newWorkingHours) {
         logger.info("Setting working hours for worker {}", workerId);
         Optional<Worker> workerOptional = workerRepository.findById(workerId);
@@ -52,10 +56,7 @@ public class WorkerService {
         }
     }
 
-    public Worker saveWorker(Worker worker) {
-        logger.info("Saving new worker with ID: {}", worker.getId());
-        return workerRepository.save(worker);
-    }
+
 
     public String addBadgeToWorker(String workerId, String badgeType) {
         logger.info("Adding badge '{}' to worker {}", badgeType, workerId);
@@ -86,33 +87,6 @@ public class WorkerService {
             logger.error("Worker not found with id: {}", workerId);
             throw new RuntimeException("Worker not found with id: " + workerId);
         }
-    }
-
-
-    public Worker getWorkerById(String id) {
-        logger.info("Getting worker by ID: {}", id);
-        Worker worker = cacheService.getCachedWorker(id);
-
-        if (worker != null) {
-            logger.info("Cache HIT for worker {}", id);
-            return worker;
-        }
-
-        logger.info("Cache MISS → loading from MongoDB for worker {}", id);
-        worker = workerRepository.findById(id).orElse(null);
-
-        if (worker != null) {
-            cacheService.cacheWorker(worker, 10);
-            logger.info("Worker {} cached after DB fetch", id);
-        }
-
-        return worker;
-    }
-
-
-    public void deleteCachedWorker(String id) {
-        logger.info("Deleting cached worker {}", id);
-        cacheService.deleteWorker(id);
     }
 
     public boolean addTimeSlots(String workerId, Integer timeSlot) {
