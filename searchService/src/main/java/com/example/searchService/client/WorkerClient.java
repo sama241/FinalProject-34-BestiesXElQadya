@@ -9,6 +9,6 @@ import java.util.Map;
 @FeignClient(name = "worker-service", url = "http://worker-service:8082")
 public interface WorkerClient {
 
-    @GetMapping("/workers")
+    @GetMapping("/workers/get/all")
     List<Map<String, Object>> getWorkers();
 }
